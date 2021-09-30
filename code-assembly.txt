@@ -1,0 +1,4 @@
+Favonius Bladework - Edel
+Normal Attack: Perform up to 5 consecutive strikes.
+Charged Attack: Drains Stamina over time to perform continuous slashes. At the end of the sequence, perform a more powerful slash.
+Plunging Attack: Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.
