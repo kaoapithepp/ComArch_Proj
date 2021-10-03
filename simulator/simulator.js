@@ -24,32 +24,17 @@ function readTextFile(path) {
         // console.log(RAW_DECIMAL_ARRAY);
 
     } catch(err) {
-        console.log(new Error(err.message))
+        console.log(new Error(err.message));
     }
 }  
-    
-// function : Convert to binary
-function convertToBinary(data) {
-    try {
-        data.forEach((elem) => {
-            CMD_BINARY_ARRAY.push(isTwoComplement(Number(elem)));
-        });
-
-        // debugger
-        console.log(CMD_BINARY_ARRAY);
-
-    } catch {
-        console.log(new Error());
-    }
-}
 
 // function : 2's complement -> Credit : Brandon Sarà 
-function isTwoComplement(value) {
+function convertToBinary(value) {
     let binaryStr, bitCount = BITCOUNT;
     
     if (value >= 0) {
       let twosComp = value.toString(2);
-      binaryStr    = padAndChop(twosComp, '0', (bitCount || twosComp.length));
+      binaryStr = padAndChop(twosComp, '0', (bitCount || twosComp.length));
     } else {
       binaryStr = (Math.pow(2, bitCount) + value).toString(2);
       
@@ -66,43 +51,87 @@ function padAndChop(str, padChar, length) {
 }
 
 /* Identifying Instruction Type */
-function identifierBinary(bin) {
-    bin.forEach((data) => {
-        switch(data.substring(0,3)){
-            case '000' :
-                console.log('add    -> R-Type format');
-                break;
-            case '001' :
-                console.log('nand   -> R-Type format');
-                break;
-            case '010' :
-                console.log('lw     -> I-Type format');
-                break;
-            case '011' :
-                console.log('sw     -> I-Type format');
-                break;
-            case '100' :
-                console.log('beq    -> I-Type format');
-                break;
-            case '101' :
-                console.log('jalr   -> J-Type format');
-                break;
-            case '110' :
-                console.log('halt   -> O-Type format');
-                break;
-            case '111' :
-                console.log('noop   -> O-Type format');
-                break;
-        }
-    });
+function identifierBinary(cmd) {
+    let converted = convertToBinary(cmd);
+    // debugger
+    console.log(converted);
+
+    switch(converted.substring(0,3)){
+        case '000' : // add    -> R-Type format
+            addOps(converted);
+
+            break;
+        case '001' : // nand   -> R-Type format
+            nandOps(converted);
+
+            break;
+        case '010' : // lw     -> I-Type format
+            lwOps(converted);
+
+            break;
+        case '011' : // sw     -> I-Type format
+            swOps(converted);
+            
+            break;
+        case '100' : // beq    -> I-Type format
+            beqOps(converted);
+
+            break;
+        case '101' : // jalr   -> J-Type format
+            jalrOps(converted);
+
+            break;
+        case '110' : // halt   -> O-Type format
+            haltOps(converted);
+            
+            break;
+        case '111' : // noop   -> O-Type format
+            noopOps(converted);
+            
+            break;
+    }
+}
+
+/* Operation Functions */
+function addOps(line) {
+    
+}
+
+function nandOps() {
+
+}
+
+function lwOps() {
+
+}
+
+function swOps() {
+
+}
+
+function beqOps() {
+
+}
+
+function jalrOps() {
+
+}
+
+function haltOps() {
+
+}
+
+function noopOps() {
+
 }
 
 
 /* Main Procedure */
 try {
     readTextFile(TEXT_PATH);
-    convertToBinary(RAW_DECIMAL_ARRAY);
-    identifierBinary(CMD_BINARY_ARRAY);
+
+    let starter = RAW_DECIMAL_ARRAY[0];
+    identifierBinary(starter);
 }
 catch {
     console.log(new Error());
