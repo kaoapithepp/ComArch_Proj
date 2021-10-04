@@ -1,14 +1,19 @@
-a = '1111111111111111'
+var num = '1111111111'
+function nandOps() {
+    let regA = '0111';
+    let regB = '0010';
 
-function checkTwoComplimentOffset(value) {
-    if(value.substr(0,1) ==  1){
-        const packed = 65535 - parseInt(value, 2);
-        return `${~packed}`;
-    } else {
-        const same = parseInt(value, 2)
-        return `${same}`;
+    let str='';
+    for(let i = 0; i < regA.length ; i++){
+        if(1 == regA.charAt(i) && 1 == regB.charAt(i)){
+            str += '0';
+        } else {
+            str += '1';
+        }
     }
- }
+    console.log(parseInt(str, 2));
+}
 
-console.log(parseInt(a, 2));
-console.log(checkTwoComplimentOffset(a));
+nandOps();
+
+console.log(num.length);
