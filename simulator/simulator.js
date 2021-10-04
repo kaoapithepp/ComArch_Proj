@@ -12,7 +12,7 @@ const REGISTER_SLOT = [0, 0, 0, 0, 0, 0, 0, 0];
 // Program counter and terminator
 let pc = 0;
 let inst_count = 0;
-let noHalted = 1;
+let noHalted = true;
 
 // function : Read text file
 function readTextFile(path) {
@@ -263,7 +263,7 @@ try {
     readTextFile(TEXT_PATH);
     displayState();
 
-    while(noHalted != 0){
+    while(noHalted){
         identifierBinary(MEM_DECIMAL_ARRAY[pc]);
     }
 
