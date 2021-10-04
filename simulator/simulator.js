@@ -5,7 +5,7 @@ const file_import = require('fs');
 const TEXT_PATH = 'code-simulation.txt';
 const BITCOUNT = 25;
 
-// Array for push
+// Array preservation
 const RAW_DECIMAL_ARRAY = [];
 const CMD_BINARY_ARRAY = [];
 
@@ -21,10 +21,10 @@ function readTextFile(path) {
         });
 
         // debugger
-        // console.log(RAW_DECIMAL_ARRAY);
+        console.log(RAW_DECIMAL_ARRAY);
 
     } catch(err) {
-        console.log(new Error(err.message))
+        console.log(new Error(err.message));
     }
 }  
     
@@ -48,14 +48,13 @@ function isTwoComplement(value) {
     let binaryStr, bitCount = BITCOUNT;
     
     if (value >= 0) {
-      let twosComp = value.toString(2);
-      binaryStr    = padAndChop(twosComp, '0', (bitCount || twosComp.length));
+        let twosComp = value.toString(2);
+        binaryStr    = padAndChop(twosComp, '0', (bitCount || twosComp.length));
     } else {
-      binaryStr = (Math.pow(2, bitCount) + value).toString(2);
-      
-      if (Number(binaryStr) < 0) {
-        return undefined;
-      }
+        binaryStr = (Math.pow(2, bitCount) + value).toString(2);
+        if (Number(binaryStr) < 0) {
+            return undefined;
+        }
     }
     
     return `${binaryStr}`;
@@ -102,7 +101,7 @@ function identifierBinary(bin) {
 try {
     readTextFile(TEXT_PATH);
     convertToBinary(RAW_DECIMAL_ARRAY);
-    identifierBinary(CMD_BINARY_ARRAY);
+    // identifierBinary(CMD_BINARY_ARRAY);
 }
 catch {
     console.log(new Error());
