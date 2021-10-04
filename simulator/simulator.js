@@ -55,11 +55,12 @@ function padAndChop(str, padChar, length) {
 }
 
 function checkTwoComplimentOffset(value) {
+    let sqrtNum = Math.pow(2, value.length) - 1;
     if(value.substr(0,1) ==  1){
-        const packed = 65535 - parseInt(value, 2);
+        const packed = sqrtNum - parseInt(value, 2);
         return `${~packed}`;
     } else {
-        const same = parseInt(value, 2)
+        const same = parseInt(value, 2);
         return `${same}`;
     }
  }
@@ -120,6 +121,17 @@ function nandOps(line) {
     let regA = line.substr(3,3);
     let regB = line.substr(6,3);
     let destReg = line.substr(22,3);
+
+    let str='';
+    for(let i = 0; i < regA.length ; i++){
+        if(1 == regA.charAt(i) && 1 == regB.charAt(i)){
+            str += '0';
+        } else {
+            str += '1';
+        }
+    }
+
+    REGISTER_SLOT[parseInt(destReg, 2)] = checkTwoComplimentOffset(str);
 
     inst_count += 1;
 }
@@ -190,7 +202,15 @@ function jalrOps(line) {
     let regA = line.substr(3,3);
     let regB = line.substr(6,3);
 
-    REGISTER_SLOT[parseInt(regB, 2)] = pc + 1;
+    pc += 1;
+
+    if(REGISTER_SLOT[parseInt(regA, 2)] == REGISTER_SLOT[parseInt(regB, 2)]) {
+        REGISTER_SLOT[parseInt(regB, 2)] = pc;
+        pc = MEM_DECIMAL_ARRAY[parseInt(regB, 2)];
+    } else {
+        REGISTER_SLOT[parseInt(regB, 2)] = pc;
+        pc = MEM_DECIMAL_ARRAY[parseInt(regA, 2)];
+    }
 
     inst_count += 1;
 }
