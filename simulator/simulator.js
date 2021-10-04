@@ -11,6 +11,7 @@ const REGISTER_SLOT = [0, 0, 0, 0, 0, 0, 0, 0];
 
 // Program counter and terminator
 let pc = 0;
+let inst_count = 0;
 let noHalted = 1;
 
 // function : Read text file
@@ -54,15 +55,14 @@ function padAndChop(str, padChar, length) {
 }
 
 function checkTwoComplimentOffset(value) {
-    if(value.substr(0,1) == 1){
-        for(let i = 0; i < value.length; i++){
-            if(value.substr(i, 1) == 1) value.substr(i, 1) = 0;
-            else value.substr(i, 1) = 1;
-        }
-
-        return `${value}`;
+    if(value.substr(0,1) ==  1){
+        const packed = 65535 - parseInt(value, 2);
+        return `${~packed}`;
+    } else {
+        const same = parseInt(value, 2)
+        return `${same}`;
     }
-}
+ }
 
 /* Identifying Instruction Type */
 function identifierBinary(cmd) {
@@ -107,11 +107,12 @@ function addOps(line) {
 
     REGISTER_SLOT[parseInt(destReg, 2)] = Number(REGISTER_SLOT[parseInt(regA, 2)])  + Number(REGISTER_SLOT[parseInt(regB, 2)]);
     pc += 1;
+    inst_count += 1;
+
     displayState();
 
     // debugger
-    console.log('add');
-    // console.log('traceback: ' + opcode + regA + regB + ' [15:3 not use] ' + destReg);
+    // console.log('add \n');
 }
 
 function nandOps(line) {
@@ -120,6 +121,7 @@ function nandOps(line) {
     let regB = line.substr(6,3);
     let destReg = line.substr(22,3);
 
+    inst_count += 1;
 }
 
 function lwOps(line) {
@@ -131,12 +133,12 @@ function lwOps(line) {
     checkTwoComplimentOffset(offsetField);
     REGISTER_SLOT[parseInt(regB, 2)] = MEM_DECIMAL_ARRAY[Number(REGISTER_SLOT[parseInt(regA, 2)]) + parseInt(offsetField, 2)];
     pc += 1;
+    inst_count += 1;
+
     displayState();
     
     //debugger
-    console.log('lw');
-    // console.log('traceback: ' + opcode + regA + regB + offsetField);
-    
+    // console.log('lw \n');
 }
 
 function swOps(line) {
@@ -147,11 +149,12 @@ function swOps(line) {
 
     MEM_DECIMAL_ARRAY[Number(REGISTER_SLOT[parseInt(regA, 2)]) + parseInt(offsetField, 2)] = REGISTER_SLOT[parseInt(regB, 2)];
     pc += 1;
+    inst_count += 1;
+
     displayState();
 
     //debugger
-    console.log('sw');
-    // console.log('traceback: ' + opcode + regA + regB + offsetField);
+    // console.log('sw \n');
 }
 
 function beqOps(line) {
@@ -160,25 +163,21 @@ function beqOps(line) {
         let regA = line.substr(3,3);
         let regB = line.substr(6,3);
         let offsetField = line.substr(9,16);
-
-        pc += 1;
-        checkTwoComplimentOffset(offsetField);
-        console.log('offsetField: ' + offsetField);
         
+        let res = checkTwoComplimentOffset(offsetField);
+
         if(REGISTER_SLOT[parseInt(regA, 2)] == REGISTER_SLOT[parseInt(regB, 2)]){
-            console.log('condition pc: ' + pc);
-            pc = pc + 1 + parseInt(offsetField, 2); // offset = 2
+            pc = pc + 1 + Number(res);
         } else {
-            console.log('else pc: ' + pc);
+            pc += 1;
         }
-    
+        
+        inst_count += 1;
+
         displayState();
     
         //debugger
-        console.log('beq');
-        console.log(REGISTER_SLOT[parseInt(regA, 2)]);
-        console.log(REGISTER_SLOT[parseInt(regB, 2)]);
-        // console.log('traceback: ' + opcode + regA + regB + offsetField);
+        // console.log('beq \n');
 
     } catch(err) {
         throw err.message;
@@ -193,26 +192,40 @@ function jalrOps(line) {
 
     REGISTER_SLOT[parseInt(regB, 2)] = pc + 1;
 
-
+    inst_count += 1;
 }
 
 function haltOps(line) {
     let opcode = line.substr(0,3);
 
-    noHalted = 0;
     pc += 1;
+    noHalted = 0;
+    inst_count += 1;
+    
+
+    displayState();
+
+    //debugger
+    // console.log('halt \n');
 }
 
 function noopOps(line) {
     let opcode = line.substr(0,3);
+
     pc += 1;
+    inst_count += 1;
+    
+    displayState();
+    
+    //debugger
+    // console.log('noop \n');
 }
 
 /* Display state */
 function displayState() {
     console.log('@@@');
     console.log('state:');
-    console.log(`   command line: ${pc}`);
+    console.log(`   pc: ${pc}`);
     console.log('   memory:')
     for(let i = 0; i < MEM_DECIMAL_ARRAY.length; i++){
         console.log(`       mem[${i}] ${MEM_DECIMAL_ARRAY[i]}`);
@@ -221,7 +234,7 @@ function displayState() {
     for(let j = 0; j < REGISTER_SLOT.length; j++){
         console.log(`       reg[${j}] ${REGISTER_SLOT[j]}`);
     }
-    console.log('end state \n' );
+    console.log('end state \n');
 }
 
 
@@ -233,6 +246,8 @@ try {
     while(noHalted != 0){
         identifierBinary(MEM_DECIMAL_ARRAY[pc]);
     }
+
+    console.log('# of instructions: ' + inst_count);
     
 }
 catch {
