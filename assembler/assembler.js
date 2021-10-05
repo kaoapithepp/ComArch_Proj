@@ -26,7 +26,6 @@ function readTextFile(path) {
 
     // debugger
     console.log(ASSEMBLY_LINE);
-    // console.log(ASSEMBLY_LINE.length)
 }
 
 // function : first read at first element then check is it label?
