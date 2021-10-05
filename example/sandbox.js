@@ -1,20 +1,12 @@
-let a = '            lw          0         1         five';
-
-
-let arr = [];
-// function : check format
-function isAssemblyChecker(line) {
-    let splitter = line.split(' ').filter(e => e != '');
-    // let checker = line.match('add' | 'nand' | 'lw' | 'sw' | 'beq' | 'jalr' | 'noop' | 'halt' | '.fill')
-    console.log(splitter[0]);
+function checkTwoComplimentOffset(value) {
+    let sqrtNum = Math.pow(2, value.length) - 1;
+    if(value.substr(0,1) ==  1){
+        const packed = sqrtNum - parseInt(value, 2);
+        return `${~packed}`;
+    } else {
+        const same = parseInt(value, 2);
+        return `${same}`;
+    }
 }
 
-// function splitAndCheck(line){
-//     console.log(line.split(' ').filter((e) => e != ''));
-// }
-
-// let b = 'Today is aespa comeback'
-// console.log(b.split(' '));
-// splitAndCheck(a);
-
-isAssemblyChecker(a);
+console.log(checkTwoComplimentOffset('11101'));

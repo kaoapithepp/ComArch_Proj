@@ -63,7 +63,7 @@ function checkTwoComplimentOffset(value) {
         const same = parseInt(value, 2);
         return `${same}`;
     }
- }
+}
 
 /* Identifying Instruction Type */
 function identifierBinary(cmd) {
