@@ -1,19 +1,20 @@
-var num = '1111111111'
-function nandOps() {
-    let regA = '0111';
-    let regB = '0010';
+let a = '            lw          0         1         five';
 
-    let str='';
-    for(let i = 0; i < regA.length ; i++){
-        if(1 == regA.charAt(i) && 1 == regB.charAt(i)){
-            str += '0';
-        } else {
-            str += '1';
-        }
-    }
-    console.log(parseInt(str, 2));
+
+let arr = [];
+// function : check format
+function isAssemblyChecker(line) {
+    let splitter = line.split(' ').filter(e => e != '');
+    // let checker = line.match('add' | 'nand' | 'lw' | 'sw' | 'beq' | 'jalr' | 'noop' | 'halt' | '.fill')
+    console.log(splitter[0]);
 }
 
-nandOps();
+// function splitAndCheck(line){
+//     console.log(line.split(' ').filter((e) => e != ''));
+// }
 
-console.log(num.length);
+// let b = 'Today is aespa comeback'
+// console.log(b.split(' '));
+// splitAndCheck(a);
+
+isAssemblyChecker(a);
