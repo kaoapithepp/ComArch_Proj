@@ -361,7 +361,7 @@ function createFileTxt(){
     // })
     for(let i = 0; i < TEXT_INSTANCE.length ; i++){
         file.write(TEXT_INSTANCE[i]);
-        if(i < TEXT_INSTANCE.length){
+        if(i < (TEXT_INSTANCE.length - 1)){
             file.write('\n');
         }
     }
