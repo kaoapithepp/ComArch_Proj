@@ -1,8 +1,10 @@
 // Import Library
 const file_import = require('fs');
 
-// Constant Variable
-const TEXT_PATH = '../code-simulation.txt';
+// Test Cases
+const TEXT_PATH = '../assembler/export-maccode.txt';
+
+// Constant Varible
 const BITCOUNT = 25;
 
 // Array preservation
@@ -187,7 +189,7 @@ function beqOps(line) {
         inst_count += 1;
 
         displayState();
-    
+
         //debugger
         // console.log('beq \n');
 

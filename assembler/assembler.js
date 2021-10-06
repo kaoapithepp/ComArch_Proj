@@ -1,11 +1,16 @@
 // Import Library
 const file_import = require('fs');
+const export_file = require('fs');
 
-// Constant Variable
+// Test Cases
 const TEXT_PATH = '../code-assembly.txt';
+// const TEXT_PATH = '../assembly/combination.txt';
+// const TEXT_PATH = '../assembly/factorial.txt';
+// const TEXT_PATH = '../assembly/multiplication.txt';
 
 // Array preservation
 const ASSEMBLY_LINE = [];
+const TEXT_INSTANCE = [];
 
 // Dictionary
 const LABEL_REF = {};
@@ -20,6 +25,7 @@ function readTextFile(path) {
 
     const readLines = textFile.split(/\r?\n/);
 
+    // split spacebar/tabs into array element -> filter out of those space elements
     readLines.forEach((line) => {
         ASSEMBLY_LINE.push(line.split(' ').filter(e => e != ''));
     });
@@ -74,76 +80,126 @@ function formatChecker(line) {
 
     let index = 0;
 
-    while(index < ASSEMBLY_LINE[pc].length) {
+    while(index < line.length) {
         switch(ASSEMBLY_LINE[pc][index]) {
             case 'add':
                 // console.log('found add');
                 addBinary(ASSEMBLY_LINE[pc]);
-                pc += 1;
                 break;
             case 'nand':
                 // console.log('found nand');
                 nandBinary(ASSEMBLY_LINE[pc])
-                pc += 1;
                 break;
             case 'lw':
                 // console.log('found lw');
                 lwBinary(ASSEMBLY_LINE[pc]);
-                pc += 1;
                 break;
             case 'sw':
                 // console.log('found sw');
                 swBinary(ASSEMBLY_LINE[pc]);
-                pc += 1;
                 break;
             case 'beq':
                 // console.log('found beq');
                 beqBinary(ASSEMBLY_LINE[pc]);
-                pc += 1;
                 break;
             case 'jalr':
                 console.log('found jalr');
                 jalrBinary(ASSEMBLY_LINE[pc]);
-                pc += 1;
                 break;
             case 'noop':
                 // console.log('found noop');
                 noopBinary(ASSEMBLY_LINE[pc]);
-                pc += 1;
                 break;
             case 'halt':
                 // console.log('found halt');
                 haltBinary(ASSEMBLY_LINE[pc]);
-                pc += 1;
                 break;
             case '.fill':
                 // console.log('found .fill');
                 fillBinary(ASSEMBLY_LINE[pc]);
-                pc += 1;
-                break;
-            default:
-                index += 1;
                 break;
         }
+        index += 1;
     }
+}
+
+// function : 2's complement -> Credit : Apithep & Chanathip 
+function convertExtend1Bit(value) {
+    let operand = value.toString(2);
+    let temp = '';
+    // check each bit whether 1 or 0
+    for(let i = 0; i < operand.length ; i++){
+        if(operand.charAt(i) == 0) temp += 1;
+        else temp += 0;
+    }
+    // extend bit
+    if(operand.length < 16){
+        for(let i = 0; i < (16 - operand.length) ; i++){
+            temp = '1' + temp;
+        }
+    }
+    //debugger
+    // console.log('this is extend16 : ' + temp);
+    return temp;
 }
 
 function extend3Bit(value) {
+    let temp = value;
     if(value.length < 3){
-        for(let i = 0; i <= (3 - value.length) ; i++){
-            value = '0' + value;
+        for(let i = 0; i < (3 - value.length) ; i++){
+            temp = '0' + temp;
         }
     }
-    return value;
+    // debugger
+    // console.log('this is extend3 : ' + temp);
+    return temp;
 }
 
 function extend16Bit(value) {
+    let temp = value;
     if(value.length < 16){
-        for(let i = 0; i <= (16 - value.length) ; i++){
-            value = '0' + value;
+        for(let i = 0; i < (16 - value.length) ; i++){
+            temp = '0' + temp;
         }
     }
-    return value;
+    //debugger
+    // console.log('this is extend16 : ' + temp);
+    return temp;
+}
+
+// function : check if offsetField matched with property names
+function checkMatchedProps(elem){
+    const validator = Object.getOwnPropertyNames(LABEL_REF);
+    for(let i = 0; i < validator.length ; i++){
+        if(elem == validator[i]){
+            // const val = ASSEMBLY_LINE[LABEL_REF[validator[i]]][2];
+            const val = LABEL_REF[validator[i]];
+            if(val > pc) {
+                return extend16Bit(String(Number(val).toString(2))); 
+            } else if (val < pc) {
+                return convertExtend1Bit(val); // return as binary
+            } else {
+                return error;
+            }
+        } else {
+            continue;
+        }
+    } 
+    return extend16Bit(Number(elem).toString(2));
+}
+
+function checkMatchedPropForFill(elem){
+    const validator = Object.getOwnPropertyNames(LABEL_REF);
+    for(let i = 0; i < validator.length ; i++){
+        if(elem == validator[i]){
+            const val = ASSEMBLY_LINE[LABEL_REF[validator[i]]][2];
+            // const val = LABEL_REF[validator[i]];
+            return `${val}`
+        } else {
+            continue;
+        }
+    } 
+    return `${elem}`;
 }
 
 // function : translate add command to bin
@@ -159,7 +215,10 @@ function addBinary(cmd) {
     let destReg = extend3Bit(Number(trimmedCmd[trimmedCmd.length - 1]).toString(2));
 
     let decimal = parseInt((opcode + regA + regB + notUsed + destReg), 2);
+    TEXT_INSTANCE.push(`${decimal}`);
     console.log('add as decimal : ' + decimal);
+
+    pc += 1;
 }
 
 function nandBinary(cmd) {
@@ -174,7 +233,10 @@ function nandBinary(cmd) {
     let destReg = extend3Bit(Number(trimmedCmd[trimmedCmd.length - 1]).toString(2));
 
     let decimal = parseInt((opcode + regA + regB + notUsed + destReg), 2);
+    TEXT_INSTANCE.push(`${decimal}`);
     console.log('nand as decimal : ' + decimal);
+
+    pc += 1;
 }
 
 function lwBinary(cmd) {
@@ -185,20 +247,53 @@ function lwBinary(cmd) {
     let opcode = '010';
     let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
-    let offsetField = trimmedCmd[trimmedCmd.length - 1];
-    // if(typeof offsetField)
+    let offset = trimmedCmd[trimmedCmd.length - 1];
+
+    let offsetField = checkMatchedProps(offset);
 
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
-    console.log(opcode + regA + regB + offsetField);
+    TEXT_INSTANCE.push(`${decimal}`);
     console.log('lw as decimal : '+ decimal);
+
+    pc += 1;
 }
 
 function swBinary(cmd) {
     console.log(cmd);
+
+    let trimmedCmd = checkForTrim(cmd);
+
+    let opcode = '011';
+    let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
+    let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
+    let offset = trimmedCmd[trimmedCmd.length - 1];
+
+    let offsetField = checkMatchedProps(offset);
+
+    let decimal = parseInt((opcode + regA + regB + offsetField), 2);
+    TEXT_INSTANCE.push(`${decimal}`);
+    console.log('sw as decimal : '+ decimal);
+
+    pc += 1;
 }
 
 function beqBinary(cmd) {
     console.log(cmd);
+
+    let trimmedCmd = checkForTrim(cmd);
+
+    let opcode = '100';
+    let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
+    let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
+    let offset = trimmedCmd[trimmedCmd.length - 1];
+
+    let offsetField = checkMatchedProps(offset);
+
+    let decimal = parseInt((opcode + regA + regB + offsetField), 2);
+    TEXT_INSTANCE.push(`${decimal}`);
+    console.log('beq as decimal : '+ decimal);
+
+    pc += 1;
 }
 
 function jalrBinary(cmd) {
@@ -212,7 +307,10 @@ function jalrBinary(cmd) {
     let notUsed = '0000000000000';
 
     let decimal = parseInt((opcode + regA + regB + notUsed), 2);
+    TEXT_INSTANCE.push(`${decimal}`);
     console.log(decimal);
+
+    pc += 1;
 }
 
 function haltBinary(cmd) {
@@ -222,7 +320,10 @@ function haltBinary(cmd) {
     let notUsed = '0000000000000000000000';
 
     let decimal = parseInt((opcode + notUsed), 2);
+    TEXT_INSTANCE.push(`${decimal}`);
     console.log('halt as decimal : ' + decimal);
+
+    pc += 1;
 }
 
 function noopBinary(cmd) {
@@ -232,16 +333,40 @@ function noopBinary(cmd) {
     let notUsed = '0000000000000000000000';
 
     let decimal = parseInt((opcode + notUsed), 2);
+    TEXT_INSTANCE.push(`${decimal}`);
     console.log('noop as decimal : ' + decimal);
+
+    pc += 1;
 }
 
 function fillBinary(cmd) {
     console.log(cmd);
 
     let trimmedCmd = checkForTrim(cmd);
+    let elem = trimmedCmd[trimmedCmd.length - 1];
 
+    let immidiate = checkMatchedPropForFill(elem);
+    TEXT_INSTANCE.push(`${immidiate}`);
+    console.log('fill as decimal : ' + immidiate);
+
+    pc += 1;
 }
 
+/* Creating Text File */
+function createFileTxt(){
+    let file = export_file.createWriteStream('./export-maccode.txt');
+    file.on('error', err => console.log(err));
+    // TEXT_INSTANCE.forEach((e) => {
+    //     file.write(e);
+    // })
+    for(let i = 0; i < TEXT_INSTANCE.length ; i++){
+        file.write(TEXT_INSTANCE[i]);
+        if(i < TEXT_INSTANCE.length){
+            file.write('\n');
+        }
+    }
+    file.end();
+}
 
 /* Main procedure */
 try {
@@ -250,7 +375,9 @@ try {
     while(pc < ASSEMBLY_LINE.length){
         formatChecker(ASSEMBLY_LINE[pc]);
     }
+    console.log(TEXT_INSTANCE);
+    createFileTxt();
 }
 catch(err) {
-    console.log(err.message);
+    console.log(err);
 }

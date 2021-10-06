@@ -1,12 +1,14 @@
-function checkTwoComplimentOffset(value) {
-    let sqrtNum = Math.pow(2, value.length) - 1;
-    if(value.substr(0,1) ==  1){
-        const packed = sqrtNum - parseInt(value, 2);
-        return `${~packed}`;
-    } else {
-        const same = parseInt(value, 2);
-        return `${same}`;
-    }
-}
+a = [
+    [ 'lw', '0', '1', 'five' ],
+    [ 'lw', '1', '2', '3' ],
+    [ 'start', 'add', '1', '2', '1' ],
+    [ 'beq', '0', '1', '2' ],
+    [ 'beq', '0', '0', 'start' ],
+    [ 'noop' ],
+    [ 'done', 'halt' ],
+    [ 'five', '.fill', '5' ],
+    [ 'neg1', '.fill', '-1' ],
+    [ 'stAddr', '.fill', 'start' ]
+  ]
 
-console.log(checkTwoComplimentOffset('11101'));
+console.log(a.length);
