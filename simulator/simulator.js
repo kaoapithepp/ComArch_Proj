@@ -179,7 +179,6 @@ function beqOps(line) {
         let offsetField = line.substr(9,16);
         
         let res = checkTwoComplimentOffset(offsetField);
-
         if(REGISTER_SLOT[parseInt(regA, 2)] == REGISTER_SLOT[parseInt(regB, 2)]){
             pc = pc + 1 + Number(res);
         } else {
@@ -268,6 +267,10 @@ try {
     while(noHalted){
         identifierBinary(MEM_DECIMAL_ARRAY[pc]);
     }
+
+    // while(pc < 12){
+    //     identifierBinary(MEM_DECIMAL_ARRAY[pc]);
+    // }
 
     console.log('# of instructions: ' + inst_count);
     

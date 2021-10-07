@@ -3,9 +3,9 @@ const file_import = require('fs');
 const export_file = require('fs');
 
 // Test Cases
-const TEXT_PATH = '../code-assembly.txt';
+// const TEXT_PATH = '../code-assembly.txt';
 // const TEXT_PATH = '../assembly/combination.txt';
-// const TEXT_PATH = '../assembly/factorial.txt';
+const TEXT_PATH = '../assembly/factorial.txt';
 // const TEXT_PATH = '../assembly/multiplication.txt';
 
 // Array preservation
@@ -14,6 +14,7 @@ const TEXT_INSTANCE = [];
 
 // Dictionary
 const LABEL_REF = {};
+const FILL_REF = {};
 
 // Program counter
 let pc = 0;
@@ -44,11 +45,11 @@ function preRead() {
             ASSEMBLY_LINE[i][0] != 'beq' &&
             ASSEMBLY_LINE[i][0] != 'jalr' &&
             ASSEMBLY_LINE[i][0] != 'noop' &&
-            ASSEMBLY_LINE[i][0] != 'halt') {
-            recogLabel(ASSEMBLY_LINE[i][0], i);
+            ASSEMBLY_LINE[i][0] != 'halt' &&
+            ASSEMBLY_LINE[i][1] != '.fill') {
+                recogLabel(ASSEMBLY_LINE[i][0], i);
+            }
         }
-    }
-
     // debugger
     console.log(LABEL_REF);
 }
@@ -103,7 +104,7 @@ function formatChecker(line) {
                 beqBinary(ASSEMBLY_LINE[pc]);
                 break;
             case 'jalr':
-                console.log('found jalr');
+                // console.log('found jalr');
                 jalrBinary(ASSEMBLY_LINE[pc]);
                 break;
             case 'noop':
@@ -175,9 +176,13 @@ function checkMatchedProps(elem){
             // const val = ASSEMBLY_LINE[LABEL_REF[validator[i]]][2];
             const val = LABEL_REF[validator[i]];
             if(val > pc) {
-                return extend16Bit(String(Number(val).toString(2))); 
+                let diff = val - pc; // diff returns amount of line that it must go
+                console.log(diff);
+                return extend16Bit(String(Number(diff).toString(2))); 
             } else if (val < pc) {
-                return convertExtend1Bit(val); // return as binary
+                let diff = (pc - val) - 1;
+                console.log(diff);
+                return convertExtend1Bit(diff); // return as binary
             } else {
                 return error;
             }
@@ -188,6 +193,7 @@ function checkMatchedProps(elem){
     return extend16Bit(Number(elem).toString(2));
 }
 
+// get value of that label
 function checkMatchedPropForFill(elem){
     const validator = Object.getOwnPropertyNames(LABEL_REF);
     for(let i = 0; i < validator.length ; i++){
@@ -253,6 +259,7 @@ function lwBinary(cmd) {
 
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
     TEXT_INSTANCE.push(`${decimal}`);
+    console.log(opcode + regA + regB + offsetField);
     console.log('lw as decimal : '+ decimal);
 
     pc += 1;
@@ -291,6 +298,7 @@ function beqBinary(cmd) {
 
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
     TEXT_INSTANCE.push(`${decimal}`);
+    console.log(opcode + regA + regB + offsetField);
     console.log('beq as decimal : '+ decimal);
 
     pc += 1;
@@ -342,10 +350,12 @@ function noopBinary(cmd) {
 function fillBinary(cmd) {
     console.log(cmd);
 
-    let trimmedCmd = checkForTrim(cmd);
-    let elem = trimmedCmd[trimmedCmd.length - 1];
+    FILL_REF[cmd[0]] = cmd[2];
+    console.log(FILL_REF);
+    // let trimmedCmd = checkForTrim(cmd);
+    // let elem = trimmedCmd[trimmedCmd.length - 1];
 
-    let immidiate = checkMatchedPropForFill(elem);
+    let immidiate = checkMatchedPropForFill(cmd[2]);
     TEXT_INSTANCE.push(`${immidiate}`);
     console.log('fill as decimal : ' + immidiate);
 
