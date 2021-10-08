@@ -60,7 +60,7 @@ function checkTwoComplimentOffset(value) {
     let sqrtNum = Math.pow(2, value.length) - 1;
     if(value.substr(0,1) ==  1){
         const packed = sqrtNum - parseInt(value, 2);
-        return `${~packed}`;
+        return `${~packed}`; // we got negative value
     } else {
         const same = parseInt(value, 2);
         return `${same}`;
@@ -107,6 +107,12 @@ function addOps(line) {
     let regA = line.substr(3,3);
     let regB = line.substr(6,3);
     let destReg = line.substr(22,3);
+    
+    // debugger
+    // console.log('opcode : ' + opcode)
+    // console.log('regA : ' + regA)
+    // console.log('regB : ' + regB)
+    // console.log('destReg : ' + destReg)
 
     REGISTER_SLOT[parseInt(destReg, 2)] = Number(REGISTER_SLOT[parseInt(regA, 2)])  + Number(REGISTER_SLOT[parseInt(regB, 2)]);
     pc += 1;
@@ -115,6 +121,7 @@ function addOps(line) {
     displayState();
 
     // debugger
+    // console.log('add : ' + opcode + regA + regB + destReg);
     // console.log('add \n');
 }
 
@@ -135,6 +142,9 @@ function nandOps(line) {
 
     REGISTER_SLOT[parseInt(destReg, 2)] = checkTwoComplimentOffset(str);
 
+    // debugger
+    // console.log('nand : ' + opcode + regA + regB + destReg);
+
     inst_count += 1;
 }
 
@@ -151,7 +161,8 @@ function lwOps(line) {
 
     displayState();
     
-    //debugger
+    // debugger
+    // console.log('lw : ' + opcode + regA + regB + offsetField);
     // console.log('lw \n');
 }
 
@@ -167,7 +178,8 @@ function swOps(line) {
 
     displayState();
 
-    //debugger
+    // debugger
+    // console.log('sw : ' + opcode + regA + regB + offsetField);
     // console.log('sw \n');
 }
 
@@ -179,8 +191,13 @@ function beqOps(line) {
         let offsetField = line.substr(9,16);
         
         let res = checkTwoComplimentOffset(offsetField);
+
+        // debugger
+        // console.log('res : ' + res);
+        // console.log('pc : ' + pc);
+
         if(REGISTER_SLOT[parseInt(regA, 2)] == REGISTER_SLOT[parseInt(regB, 2)]){
-            pc = pc + 1 + Number(res);
+            pc = pc + Number(res) + 1;
         } else {
             pc += 1;
         }
@@ -188,8 +205,9 @@ function beqOps(line) {
         inst_count += 1;
 
         displayState();
-
-        //debugger
+        
+        // debugger
+        // console.log('beq : ' + opcode + regA + regB + offsetField);
         // console.log('beq \n');
 
     } catch(err) {
@@ -213,6 +231,9 @@ function jalrOps(line) {
         pc = MEM_DECIMAL_ARRAY[parseInt(regA, 2)];
     }
 
+    // debugger
+    // console.log('jalr : ' + opcode + regA + regB);
+
     inst_count += 1;
 }
 
@@ -226,7 +247,8 @@ function haltOps(line) {
 
     displayState();
 
-    //debugger
+    // debugger
+    // console.log('halt : ' + opcode);
     // console.log('halt \n');
 }
 
@@ -238,7 +260,8 @@ function noopOps(line) {
     
     displayState();
     
-    //debugger
+    // debugger
+    // console.log('noop : ' + opcode);
     // console.log('noop \n');
 }
 
@@ -268,13 +291,14 @@ try {
         identifierBinary(MEM_DECIMAL_ARRAY[pc]);
     }
 
-    // while(pc < 12){
+    // debugger
+    // while(pc < 10){
     //     identifierBinary(MEM_DECIMAL_ARRAY[pc]);
     // }
 
     console.log('# of instructions: ' + inst_count);
     
 }
-catch {
-    console.log(new Error());
+catch(err) {
+    console.log(err);
 }

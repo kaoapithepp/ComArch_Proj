@@ -1,3 +1,1 @@
-a = 8781837;
-b = 8454151;
-console.log(b.toString(2));
+a = { start: 2, done: 6, five: 7, neg1: 8, stAddr: 9 }
