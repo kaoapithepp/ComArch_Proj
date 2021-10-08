@@ -177,11 +177,11 @@ function checkMatchedProps(elem){
             if(val > pc) {
                 let diff = val - pc; // diff returns amount of line that it must go
                 console.log(diff);
-                return extend16Bit(String(Number(val).toString(2))); 
+                return extend16Bit(String(Number(diff).toString(2))); 
             } else if (val < pc) {
-                let diff = (pc - val) - 1;
+                let diff = pc - val;
                 console.log(diff);
-                return convertExtend1Bit(val); // return as binary
+                return convertExtend1Bit(diff); // return as binary
             } else {
                 return error;
             }
@@ -196,7 +196,7 @@ function checkMatchedPropForLoadLabel(elem){
     const validator = Object.getOwnPropertyNames(LABEL_REF);
     for(let i = 0; i < validator.length ; i++){
         if(elem == validator[i]){
-            const val = ASSEMBLY_LINE[LABEL_REF[validator[i]]][2];
+            const val = LABEL_REF[validator[i]];
             // const val = LABEL_REF[validator[i]];
             return extend16Bit(String(Number(val).toString(2)));
         } else {
@@ -212,9 +212,13 @@ function checkMatchedPropForFill(elem){
     const validator = Object.getOwnPropertyNames(LABEL_REF);
     for(let i = 0; i < validator.length ; i++){
         if(elem == validator[i]){
-            const val = ASSEMBLY_LINE[LABEL_REF[validator[i]]][2];
-            // const val = LABEL_REF[validator[i]];
-            return `${val}`
+            if(typeof elem == Number){
+                return `${val}`;
+            } else {
+                const val = LABEL_REF[validator[i]];
+                // const val = ASSEMBLY_LINE[LABEL_REF[validator[i]]][2];
+                return `${val}`;
+            }
         } else {
             continue;
         }
@@ -306,9 +310,10 @@ function beqBinary(cmd) {
     let opcode = '100';
     let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
-    let offset = trimmedCmd[trimmedCmd.length - 1];
+    let offset = trimmedCmd[trimmedCmd.length - 1]; // no matter is number or label
 
     let offsetField = checkMatchedProps(offset);
+    
 
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
     TEXT_INSTANCE.push(`${decimal}`);
