@@ -3,9 +3,9 @@ const file_import = require('fs');
 const export_file = require('fs');
 
 // Test Cases
-const TEXT_PATH = '../code-assembly.txt';
+// const TEXT_PATH = '../code-assembly.txt';
 // const TEXT_PATH = '../assembly/combination.txt';
-// const TEXT_PATH = '../assembly/factorial.txt';
+const TEXT_PATH = '../assembly/factorial.txt';
 // const TEXT_PATH = '../assembly/multiplication.txt';
 
 // Array preservation
@@ -14,7 +14,6 @@ const TEXT_INSTANCE = [];
 
 // Dictionary
 const LABEL_REF = {};
-const FILL_REF = {};
 
 // Program counter
 let pc = 0;
@@ -50,7 +49,7 @@ function preRead() {
             }
         }
     // debugger
-    console.log(LABEL_REF);
+    // console.log(LABEL_REF); // print label name with line number
 }
 
 // function : recognize that line's label and value
@@ -123,26 +122,28 @@ function formatChecker(line) {
     }
 }
 
-// function : 2's complement -> Credit : Apithep & Chanathip 
+// function : 2's complement -> Credit : Brandon Sarà 
 function convertExtend1Bit(value) {
-    let operand = value.toString(2);
-    let temp = '';
-    // check each bit whether 1 or 0
-    for(let i = 0; i < operand.length ; i++){
-        if(operand.charAt(i) == 0) temp += 1;
-        else temp += 0;
-    }
-    // extend bit
-    if(operand.length < 16){
-        for(let i = 0; i < (16 - operand.length) ; i++){
-            temp = '1' + temp;
+    let binaryStr, bitCount = 16;
+    
+    if (value >= 0) {
+      let twosComp = value.toString(2);
+      binaryStr = padAndChop(twosComp, '0', (bitCount || twosComp.length));
+    } else {
+        binaryStr = (Math.pow(2, bitCount) + value).toString(2);
+        if (Number(binaryStr) < 0) {
+            return undefined;
         }
     }
-    //debugger
-    // console.log('this is extend16 : ' + temp);
-    return temp;
+    
+    return `${binaryStr}`;
 }
 
+function padAndChop(str, padChar, length) {
+    return (Array(length).fill(padChar).join('') + str).slice(length * -1);
+}
+
+// function : extend unsigned 3 bit
 function extend3Bit(value) {
     let temp = value;
     if(value.length < 3){
@@ -155,6 +156,7 @@ function extend3Bit(value) {
     return temp;
 }
 
+// function : extend unsigned 16 bit
 function extend16Bit(value) {
     let temp = value;
     if(value.length < 16){
@@ -167,7 +169,7 @@ function extend16Bit(value) {
     return temp;
 }
 
-// function : check if offsetField matched with property names
+// function : check if offsetField matched with label names and get AMOUNT of line that we have to jump to.
 function checkMatchedProps(elem){
     const validator = Object.getOwnPropertyNames(LABEL_REF);
     for(let i = 0; i < validator.length ; i++){
@@ -176,12 +178,16 @@ function checkMatchedProps(elem){
             const val = LABEL_REF[validator[i]];
             if(val > pc) {
                 let diff = val - pc; // diff returns amount of line that it must go
-                console.log(diff);
-                return extend16Bit(String(Number(diff).toString(2))); 
+
+                // debugger
+                // console.log(diff);
+                return extend16Bit(String(Number(diff).toString(2))); // return as extended binary
             } else if (val < pc) {
-                let diff = pc - val;
-                console.log(diff);
-                return convertExtend1Bit(diff); // return as binary
+                let diff = pc - val; // diff returns amount of line that it must go
+
+                // debugger
+                // console.log(diff);
+                return convertExtend1Bit(diff); // return as converted extended binary
             } else {
                 return error;
             }
@@ -192,12 +198,12 @@ function checkMatchedProps(elem){
     return extend16Bit(Number(elem).toString(2));
 }
 
-function checkMatchedPropForLoadLabel(elem){
+// get line's NUMBER which has the matched command
+function checkMatchedPropForLoad(elem){
     const validator = Object.getOwnPropertyNames(LABEL_REF);
     for(let i = 0; i < validator.length ; i++){
         if(elem == validator[i]){
             const val = LABEL_REF[validator[i]];
-            // const val = LABEL_REF[validator[i]];
             return extend16Bit(String(Number(val).toString(2)));
         } else {
             continue;
@@ -207,16 +213,15 @@ function checkMatchedPropForLoadLabel(elem){
 }
 
 
-// get value of that label
+// get THE VALUE within that label FOR DISPLAY .FILL ONLY
 function checkMatchedPropForFill(elem){
     const validator = Object.getOwnPropertyNames(LABEL_REF);
     for(let i = 0; i < validator.length ; i++){
         if(elem == validator[i]){
             if(typeof elem == Number){
-                return `${val}`;
+                return `${val}`; // if .fill is imm -> return as that value as number
             } else {
-                const val = LABEL_REF[validator[i]];
-                // const val = ASSEMBLY_LINE[LABEL_REF[validator[i]]][2];
+                const val = LABEL_REF[validator[i]]; // we got line's num which has this label
                 return `${val}`;
             }
         } else {
@@ -226,7 +231,46 @@ function checkMatchedPropForFill(elem){
     return `${elem}`;
 }
 
-// function : translate add command to bin
+// get line's number from the matched label, check with pc by conditions and return extended binary
+function getLineNumFromLabel(elem){
+
+    if(elem == Number(elem)){
+        return extend16Bit(Number(elem).toString(2));
+    } else if (String(elem) == 'halt'){
+        return haltBinary(elem);
+    } else {
+        const validator = Object.getOwnPropertyNames(LABEL_REF); // array of label name
+        for(let i = 0; i < validator.length ; i++){
+            if(elem == validator[i]){
+                const lineNum =  checkMatchedPropForFill(validator[i]); // get THE VALUE within that label (line number)
+
+                // debugger
+                // console.log('lineNum : ' + lineNum);
+                // console.log('pc : ' + pc);
+                if(lineNum > pc) {
+                    let diff = (Number(lineNum) - 1) - pc;
+                    // debugger
+                    // console.log('diff : ' + diff);
+                    // console.log('pc after diff : ' + pc);
+                    return extend16Bit(Number(diff).toString(2));
+                } else if (lineNum < pc){
+                    let diff = pc - Number(lineNum);
+                    // debugger
+                    // console.log('diff : ' + diff);
+                    // console.log('pc after diff : ' + pc);
+                    // console.log(Number(~diff));
+                    return convertExtend1Bit(Number(~diff));
+                } else {
+                    return error;
+                }
+            } else {
+                continue;
+            }
+        } 
+    } 
+}
+
+/* functions : translate add command to bin */
 function addBinary(cmd) {
     console.log(cmd);
 
@@ -240,6 +284,9 @@ function addBinary(cmd) {
 
     let decimal = parseInt((opcode + regA + regB + notUsed + destReg), 2);
     TEXT_INSTANCE.push(`${decimal}`);
+
+    // print
+    console.log(opcode + regA + regB + notUsed + destReg);
     console.log('add as decimal : ' + decimal);
 
     pc += 1;
@@ -258,6 +305,9 @@ function nandBinary(cmd) {
 
     let decimal = parseInt((opcode + regA + regB + notUsed + destReg), 2);
     TEXT_INSTANCE.push(`${decimal}`);
+
+    // print
+    console.log(opcode + regA + regB + notUsed + destReg);
     console.log('nand as decimal : ' + decimal);
 
     pc += 1;
@@ -273,10 +323,12 @@ function lwBinary(cmd) {
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
     let offset = trimmedCmd[trimmedCmd.length - 1];
 
-    let offsetField = checkMatchedPropForLoadLabel(offset);
+    let offsetField = checkMatchedPropForLoad(offset);
 
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
     TEXT_INSTANCE.push(`${decimal}`);
+
+    // print
     console.log(opcode + regA + regB + offsetField);
     console.log('lw as decimal : '+ decimal);
 
@@ -297,6 +349,9 @@ function swBinary(cmd) {
 
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
     TEXT_INSTANCE.push(`${decimal}`);
+
+    // print
+    console.log(opcode + regA + regB + offsetField);
     console.log('sw as decimal : '+ decimal);
 
     pc += 1;
@@ -312,11 +367,13 @@ function beqBinary(cmd) {
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
     let offset = trimmedCmd[trimmedCmd.length - 1]; // no matter is number or label
 
-    let offsetField = checkMatchedProps(offset);
+    let offsetField = getLineNumFromLabel(offset);
     
 
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
     TEXT_INSTANCE.push(`${decimal}`);
+
+    // print
     console.log(opcode + regA + regB + offsetField);
     console.log('beq as decimal : '+ decimal);
 
@@ -335,6 +392,9 @@ function jalrBinary(cmd) {
 
     let decimal = parseInt((opcode + regA + regB + notUsed), 2);
     TEXT_INSTANCE.push(`${decimal}`);
+
+    // print
+    console.log(opcode + regA + regB + notUsed);
     console.log(decimal);
 
     pc += 1;
@@ -348,6 +408,9 @@ function haltBinary(cmd) {
 
     let decimal = parseInt((opcode + notUsed), 2);
     TEXT_INSTANCE.push(`${decimal}`);
+
+    // print
+    console.log(opcode + notUsed);
     console.log('halt as decimal : ' + decimal);
 
     pc += 1;
@@ -361,6 +424,9 @@ function noopBinary(cmd) {
 
     let decimal = parseInt((opcode + notUsed), 2);
     TEXT_INSTANCE.push(`${decimal}`);
+
+    // print
+    console.log(opcode + notUsed);
     console.log('noop as decimal : ' + decimal);
 
     pc += 1;
@@ -374,24 +440,26 @@ function fillBinary(cmd) {
 
     let immidiate = checkMatchedPropForFill(elem);
     TEXT_INSTANCE.push(`${immidiate}`);
+
+    // print
+    console.log(immidiate);
     console.log('fill as decimal : ' + immidiate);
 
     pc += 1;
 }
 
 /* Creating Text File */
-function createFileTxt(){
+function createFileTxt(content){
     let file = export_file.createWriteStream('./export-maccode.txt');
     file.on('error', err => console.log(err));
-    // TEXT_INSTANCE.forEach((e) => {
-    //     file.write(e);
-    // })
-    for(let i = 0; i < TEXT_INSTANCE.length ; i++){
-        file.write(TEXT_INSTANCE[i]);
-        if(i < (TEXT_INSTANCE.length - 1)){
+
+    for(let i = 0; i < content.length ; i++){
+        file.write(content[i]);
+        if(i < (content.length - 1)){
             file.write('\n');
         }
     }
+
     file.end();
 }
 
@@ -403,7 +471,7 @@ try {
         formatChecker(ASSEMBLY_LINE[pc]);
     }
     console.log(TEXT_INSTANCE);
-    createFileTxt();
+    createFileTxt(TEXT_INSTANCE);
 }
 catch(err) {
     console.log(err);
