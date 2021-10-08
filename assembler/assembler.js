@@ -3,9 +3,9 @@ const file_import = require('fs');
 const export_file = require('fs');
 
 // Test Cases
-// const TEXT_PATH = '../code-assembly.txt';
+const TEXT_PATH = '../code-assembly.txt';
 // const TEXT_PATH = '../assembly/combination.txt';
-const TEXT_PATH = '../assembly/factorial.txt';
+// const TEXT_PATH = '../assembly/factorial.txt';
 // const TEXT_PATH = '../assembly/multiplication.txt';
 
 // Array preservation
@@ -45,8 +45,7 @@ function preRead() {
             ASSEMBLY_LINE[i][0] != 'beq' &&
             ASSEMBLY_LINE[i][0] != 'jalr' &&
             ASSEMBLY_LINE[i][0] != 'noop' &&
-            ASSEMBLY_LINE[i][0] != 'halt' &&
-            ASSEMBLY_LINE[i][1] != '.fill') {
+            ASSEMBLY_LINE[i][0] != 'halt') {
                 recogLabel(ASSEMBLY_LINE[i][0], i);
             }
         }
@@ -178,11 +177,11 @@ function checkMatchedProps(elem){
             if(val > pc) {
                 let diff = val - pc; // diff returns amount of line that it must go
                 console.log(diff);
-                return extend16Bit(String(Number(diff).toString(2))); 
+                return extend16Bit(String(Number(val).toString(2))); 
             } else if (val < pc) {
                 let diff = (pc - val) - 1;
                 console.log(diff);
-                return convertExtend1Bit(diff); // return as binary
+                return convertExtend1Bit(val); // return as binary
             } else {
                 return error;
             }
@@ -192,6 +191,21 @@ function checkMatchedProps(elem){
     } 
     return extend16Bit(Number(elem).toString(2));
 }
+
+function checkMatchedPropForLoadLabel(elem){
+    const validator = Object.getOwnPropertyNames(LABEL_REF);
+    for(let i = 0; i < validator.length ; i++){
+        if(elem == validator[i]){
+            const val = ASSEMBLY_LINE[LABEL_REF[validator[i]]][2];
+            // const val = LABEL_REF[validator[i]];
+            return extend16Bit(String(Number(val).toString(2)));
+        } else {
+            continue;
+        }
+    } 
+    return extend16Bit(String(Number(elem).toString(2)));
+}
+
 
 // get value of that label
 function checkMatchedPropForFill(elem){
@@ -255,7 +269,7 @@ function lwBinary(cmd) {
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
     let offset = trimmedCmd[trimmedCmd.length - 1];
 
-    let offsetField = checkMatchedProps(offset);
+    let offsetField = checkMatchedPropForLoadLabel(offset);
 
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
     TEXT_INSTANCE.push(`${decimal}`);
@@ -350,12 +364,10 @@ function noopBinary(cmd) {
 function fillBinary(cmd) {
     console.log(cmd);
 
-    FILL_REF[cmd[0]] = cmd[2];
-    console.log(FILL_REF);
-    // let trimmedCmd = checkForTrim(cmd);
-    // let elem = trimmedCmd[trimmedCmd.length - 1];
+    let trimmedCmd = checkForTrim(cmd);
+    let elem = trimmedCmd[trimmedCmd.length - 1];
 
-    let immidiate = checkMatchedPropForFill(cmd[2]);
+    let immidiate = checkMatchedPropForFill(elem);
     TEXT_INSTANCE.push(`${immidiate}`);
     console.log('fill as decimal : ' + immidiate);
 
