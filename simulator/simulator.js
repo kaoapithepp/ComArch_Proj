@@ -140,7 +140,12 @@ function nandOps(line) {
         }
     }
 
+    // console.log(str);
+
     REGISTER_SLOT[parseInt(destReg, 2)] = checkTwoComplimentOffset(str);
+    pc += 1;
+
+    // console.log(REGISTER_SLOT[parseInt(destReg, 2)]);
 
     // debugger
     // console.log('nand : ' + opcode + regA + regB + destReg);
