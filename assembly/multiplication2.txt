@@ -1,0 +1,28 @@
+        lw      0       1       product
+        lw      0       2       mcand
+        lw      0       3       mplier
+        lw      0       5       one
+        lw      0       6       lastRound
+        lw      0       7       factor
+loop    beq     7       6       end
+        nand    3       7       4
+        add     4       5       4
+        beq     4       7       addPd
+        nand    3       7       4
+        nand    4       4       4
+        beq     4       0       noAdd
+addPd   add     1       2       1
+noAdd   add     7       7       7
+        add     2       2       2
+        beq     0       0       loop
+end     halt
+mcand   .fill   32766
+mplier  .fill   10383
+factor  .fill   1
+one     .fill   1
+product .fill   0
+loopAdr .fill   loop
+lastRound .fill 32768
+endAdr .fill end
+noAddAdr .fill noAdd
+addPdAdr .fill addPd

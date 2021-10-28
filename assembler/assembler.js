@@ -5,8 +5,10 @@ const export_file = require('fs');
 // Test Cases
 // const TEXT_PATH = '../code-assembly.txt';
 // const TEXT_PATH = '../assembly/combination.txt';
+const TEXT_PATH = '../assembly/combine.txt';
 // const TEXT_PATH = '../assembly/factorial.txt';
-const TEXT_PATH = '../assembly/multiplication.txt';
+// const TEXT_PATH = '../assembly/multiplication.txt';
+// const TEXT_PATH = '../assembly/multiplication2.txt';
 
 // Array preservation
 const ASSEMBLY_LINE = [];
@@ -395,7 +397,7 @@ function jalrBinary(cmd) {
 
     // print
     console.log(opcode + regA + regB + notUsed);
-    console.log(decimal);
+    console.log('jalr as decimal : ' + decimal);
 
     pc += 1;
 }
@@ -442,7 +444,7 @@ function fillBinary(cmd) {
     TEXT_INSTANCE.push(`${immidiate}`);
 
     // print
-    console.log(immidiate);
+    // console.log(immidiate);
     console.log('fill as decimal : ' + immidiate);
 
     // let immidiate = checkMatchedPropForFill(cmd);

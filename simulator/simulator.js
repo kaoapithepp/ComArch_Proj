@@ -131,6 +131,8 @@ function nandOps(line) {
     let regB = line.substr(6,3);
     let destReg = line.substr(22,3);
 
+    console.log(`regA : ${regA}, regB : ${regB}`);
+
     let str='';
     for(let i = 0; i < regA.length ; i++){
         if(1 == regA.charAt(i) && 1 == regB.charAt(i)){
@@ -177,7 +179,10 @@ function swOps(line) {
     let regB = line.substr(6,3);
     let offsetField = line.substr(9,16);
 
-    MEM_DECIMAL_ARRAY[Number(REGISTER_SLOT[parseInt(regA, 2)]) + parseInt(offsetField, 2)] = REGISTER_SLOT[parseInt(regB, 2)];
+    // MEM_DECIMAL_ARRAY[Number(REGISTER_SLOT[parseInt(regA, 2)]) + parseInt(offsetField, 2)] = REGISTER_SLOT[parseInt(regB, 2)];
+
+    MEM_DECIMAL_ARRAY[offsetField + REGISTER_SLOT[parseInt(regA, 2)]] = REGISTER_SLOT[parseInt(regB, 2)]
+
     pc += 1;
     inst_count += 1;
 
@@ -226,14 +231,24 @@ function jalrOps(line) {
     let regA = line.substr(3,3);
     let regB = line.substr(6,3);
 
-    pc += 1;
+    // pc += 1;
 
-    if(REGISTER_SLOT[parseInt(regA, 2)] == REGISTER_SLOT[parseInt(regB, 2)]) {
-        REGISTER_SLOT[parseInt(regB, 2)] = pc;
-        pc = MEM_DECIMAL_ARRAY[parseInt(regB, 2)];
+    // if(REGISTER_SLOT[parseInt(regA, 2)] == REGISTER_SLOT[parseInt(regB, 2)]) {
+    //     REGISTER_SLOT[parseInt(regB, 2)] = pc;
+    //     pc = MEM_DECIMAL_ARRAY[parseInt(regB, 2)];
+    // } else {
+    //     REGISTER_SLOT[parseInt(regB, 2)] = pc;
+    //     pc = MEM_DECIMAL_ARRAY[parseInt(regA, 2)];
+    // }
+
+    
+
+    if(regA == regB) {
+        REGISTER_SLOT[parseInt(regB, 2)] = pc+1;
+        pc += 1;
     } else {
-        REGISTER_SLOT[parseInt(regB, 2)] = pc;
-        pc = MEM_DECIMAL_ARRAY[parseInt(regA, 2)];
+        REGISTER_SLOT[parseInt(regB, 2)] = pc+1;
+        pc = REGISTER_SLOT[parseInt(regA, 2)];
     }
 
     // debugger
