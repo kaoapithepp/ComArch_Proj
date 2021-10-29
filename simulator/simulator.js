@@ -9,7 +9,7 @@ const BITCOUNT = 25;
 
 // Array preservation
 const MEM_DECIMAL_ARRAY = [];
-const REGISTER_SLOT = [0, 0, 0, 0, 0, 0, 0, 0];
+let REGISTER_SLOT = [0, 0, 0, 0, 0, 0, 0, 0];
 
 // Program counter and terminator
 let pc = 0;
@@ -131,7 +131,7 @@ function nandOps(line) {
     let regB = line.substr(6,3);
     let destReg = line.substr(22,3);
 
-    console.log(`regA : ${regA}, regB : ${regB}`);
+    // console.log(`regA : ${regA}, regB : ${regB}`);
 
     let str='';
     for(let i = 0; i < regA.length ; i++){
@@ -181,7 +181,7 @@ function swOps(line) {
 
     // MEM_DECIMAL_ARRAY[Number(REGISTER_SLOT[parseInt(regA, 2)]) + parseInt(offsetField, 2)] = REGISTER_SLOT[parseInt(regB, 2)];
 
-    MEM_DECIMAL_ARRAY[offsetField + REGISTER_SLOT[parseInt(regA, 2)]] = REGISTER_SLOT[parseInt(regB, 2)]
+    MEM_DECIMAL_ARRAY[parseInt(offsetField, 2) + REGISTER_SLOT[parseInt(regA, 2)]] = REGISTER_SLOT[parseInt(regB, 2)]
 
     pc += 1;
     inst_count += 1;
@@ -241,18 +241,17 @@ function jalrOps(line) {
     //     pc = MEM_DECIMAL_ARRAY[parseInt(regA, 2)];
     // }
 
-    
+    pc += 1;
+    REGISTER_SLOT[parseInt(regB, 2)] = pc;
 
-    if(regA == regB) {
-        REGISTER_SLOT[parseInt(regB, 2)] = pc+1;
-        pc += 1;
-    } else {
-        REGISTER_SLOT[parseInt(regB, 2)] = pc+1;
-        pc = REGISTER_SLOT[parseInt(regA, 2)];
+    displayState();
+
+    if(regA != regB) {
+        pc = Number(REGISTER_SLOT[parseInt(regA, 2)]);
     }
 
     // debugger
-    // console.log('jalr : ' + opcode + regA + regB);
+        console.log('jalr : ' + opcode + regA + regB);
 
     inst_count += 1;
 }

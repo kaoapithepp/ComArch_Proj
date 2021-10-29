@@ -1,20 +1,33 @@
-let a = '            lw          0         1         five';
-
-
-let arr = [];
-// function : check format
-function isAssemblyChecker(line) {
-    let splitter = line.split(' ').filter(e => e != '');
-    // let checker = line.match('add' | 'nand' | 'lw' | 'sw' | 'beq' | 'jalr' | 'noop' | 'halt' | '.fill')
-    console.log(splitter[0]);
+let label = {
+    loop1: 5,
+    loop2: 9,
+    end: 16,
+    mcand: 17,
+    mplier: 18,
+    pos1: 19,
+    neg1: 20,
+    exit: 21
 }
 
-// function splitAndCheck(line){
-//     console.log(line.split(' ').filter((e) => e != ''));
+// function checkRedundantLabel(obj) {
+//     // for(let i = 0,)
+//     // terminator = 1;
 // }
 
-// let b = 'Today is aespa comeback'
-// console.log(b.split(' '));
-// splitAndCheck(a);
+let exit = 0;
 
-isAssemblyChecker(a);
+function checkRedundantLabel(keyword) {
+    let i = 0;
+    while(exit != 1) {
+        if(Object.keys(label)[i] === keyword){
+            exit = 1;
+            console.log('error!');
+        }
+        i++;
+    }
+    console.log('completed!');
+}
+
+checkRedundantLabel('end')
+
+// console.log(Object.keys(label)[1]);

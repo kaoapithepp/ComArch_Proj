@@ -4,14 +4,13 @@ const export_file = require('fs');
 
 // Test Cases
 // const TEXT_PATH = '../code-assembly.txt';
-// const TEXT_PATH = '../assembly/combination.txt';
-const TEXT_PATH = '../assembly/combine.txt';
 // const TEXT_PATH = '../assembly/factorial.txt';
+const TEXT_PATH = '../assembly/combine.txt';
 // const TEXT_PATH = '../assembly/multiplication.txt';
-// const TEXT_PATH = '../assembly/multiplication2.txt';
+// const TEXT_PATH = '../assembly/combination.txt';
 
 // Array preservation
-const ASSEMBLY_LINE = [];
+const ASSEMBLY_LINE = []; // for storing assembly command
 const TEXT_INSTANCE = [];
 
 // Dictionary
@@ -19,6 +18,10 @@ const LABEL_REF = {};
 
 // Program counter
 let pc = 0;
+
+
+// Termintor
+let terminator = 0;
 
 /* Functions */
 // function : read text file
@@ -51,14 +54,29 @@ function preRead() {
             }
         }
     // debugger
-    // console.log(LABEL_REF); // print label name with line number
+    console.log(LABEL_REF); // print label name with line number
 }
+
 
 // function : recognize that line's label and value
 function recogLabel(value, line) {
+    checkRedundantLabel(value);
     LABEL_REF[value] = line;
 }
 
+// function : check redundant label
+function checkRedundantLabel(keyword) {
+    let exit = 0
+
+    for(let i = 0; i < Object.keys(LABEL_REF).length && exit != 1; i++){
+        if(Object.keys(LABEL_REF)[i] == keyword){
+            exit = 1;
+            terminator = 1;
+            throw 'error : redundant label';
+        }
+    }
+    
+}
 // function : check label; if it has label, goes trim off it
 function checkForTrim(input) {
     if( input[0] != 'add' &&
@@ -347,7 +365,9 @@ function swBinary(cmd) {
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
     let offset = trimmedCmd[trimmedCmd.length - 1];
 
-    let offsetField = checkMatchedProps(offset);
+    console.log(offset);
+
+    let offsetField = checkMatchedPropForLoad(offset);
 
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
     TEXT_INSTANCE.push(`${decimal}`);
@@ -388,9 +408,9 @@ function jalrBinary(cmd) {
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '101';
-    let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
-    let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
-    let notUsed = '0000000000000';
+    let regA = extend3Bit(Number(trimmedCmd[trimmedCmd.length-2]).toString(2));
+    let regB = extend3Bit(Number(trimmedCmd[trimmedCmd.length-1]).toString(2));
+    let notUsed = '0000000000000000';
 
     let decimal = parseInt((opcode + regA + regB + notUsed), 2);
     TEXT_INSTANCE.push(`${decimal}`);
@@ -473,7 +493,7 @@ function createFileTxt(content){
 try {
     readTextFile(TEXT_PATH);
     preRead();
-    while(pc < ASSEMBLY_LINE.length){
+    while(pc < ASSEMBLY_LINE.length && terminator != 1){
         formatChecker(ASSEMBLY_LINE[pc]);
     }
     console.log(TEXT_INSTANCE);
