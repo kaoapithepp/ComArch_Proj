@@ -114,14 +114,14 @@ function addOps(line) {
     // console.log('regB : ' + regB)
     // console.log('destReg : ' + destReg)
 
-    REGISTER_SLOT[parseInt(destReg, 2)] = Number(REGISTER_SLOT[parseInt(regA, 2)])  + Number(REGISTER_SLOT[parseInt(regB, 2)]);
+    REGISTER_SLOT[Number(parseInt(destReg, 2))] = Number(REGISTER_SLOT[parseInt(regA, 2)])  + Number(REGISTER_SLOT[parseInt(regB, 2)]);
     pc += 1;
     inst_count += 1;
 
     displayState();
 
     // debugger
-    // console.log('add : ' + opcode + regA + regB + destReg);
+    console.log('add : ' + opcode + regA + regB + destReg);
     // console.log('add \n');
 }
 
@@ -144,13 +144,13 @@ function nandOps(line) {
 
     // console.log(str);
 
-    REGISTER_SLOT[parseInt(destReg, 2)] = checkTwoComplimentOffset(str);
+    REGISTER_SLOT[parseInt(destReg, 2)] = Number(checkTwoComplimentOffset(str));
     pc += 1;
 
-    // console.log(REGISTER_SLOT[parseInt(destReg, 2)]);
+    displayState();
 
     // debugger
-    // console.log('nand : ' + opcode + regA + regB + destReg);
+    console.log('nand : ' + opcode + regA + regB + destReg);
 
     inst_count += 1;
 }
@@ -162,6 +162,7 @@ function lwOps(line) {
     let offsetField = line.substr(9,16);
 
     checkTwoComplimentOffset(offsetField);
+
     REGISTER_SLOT[parseInt(regB, 2)] = MEM_DECIMAL_ARRAY[Number(REGISTER_SLOT[parseInt(regA, 2)]) + parseInt(offsetField, 2)];
     pc += 1;
     inst_count += 1;
@@ -169,7 +170,7 @@ function lwOps(line) {
     displayState();
     
     // debugger
-    // console.log('lw : ' + opcode + regA + regB + offsetField);
+    console.log('lw : ' + opcode + regA + regB + offsetField);
     // console.log('lw \n');
 }
 
@@ -181,7 +182,7 @@ function swOps(line) {
 
     // MEM_DECIMAL_ARRAY[Number(REGISTER_SLOT[parseInt(regA, 2)]) + parseInt(offsetField, 2)] = REGISTER_SLOT[parseInt(regB, 2)];
 
-    MEM_DECIMAL_ARRAY[parseInt(offsetField, 2) + REGISTER_SLOT[parseInt(regA, 2)]] = REGISTER_SLOT[parseInt(regB, 2)]
+    MEM_DECIMAL_ARRAY[Number(parseInt(offsetField, 2)) + Number(REGISTER_SLOT[parseInt(regA, 2)])] = Number(REGISTER_SLOT[parseInt(regB, 2)])
 
     pc += 1;
     inst_count += 1;
@@ -189,7 +190,7 @@ function swOps(line) {
     displayState();
 
     // debugger
-    // console.log('sw : ' + opcode + regA + regB + offsetField);
+    console.log('sw : ' + opcode + regA + regB + offsetField);
     // console.log('sw \n');
 }
 
@@ -217,7 +218,7 @@ function beqOps(line) {
         displayState();
         
         // debugger
-        // console.log('beq : ' + opcode + regA + regB + offsetField);
+        console.log('beq : ' + opcode + regA + regB + offsetField);
         // console.log('beq \n');
 
     } catch(err) {

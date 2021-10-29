@@ -3,11 +3,12 @@ const file_import = require('fs');
 const export_file = require('fs');
 
 // Test Cases
-const TEXT_PATH = '../code-assembly.txt';
-// const TEXT_PATH = '../assembly/factorial.txt';
+// const TEXT_PATH = '../code-assembly.txt';
+const TEXT_PATH = '../assembly/factorial.txt';
 // const TEXT_PATH = '../assembly/combine.txt';
 // const TEXT_PATH = '../assembly/multiplication.txt';
-// const TEXT_PATH = '../assembly/combination.txt';
+// const TEXT_PATH = '../assembly/multiplication-up.txt';
+// const TEXT_PATH = '../assembly/combination-up.txt';
 
 // Array preservation
 const ASSEMBLY_LINE = []; // for storing assembly command
@@ -456,7 +457,7 @@ function jalrBinary(cmd) {
 
     let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
-    let notUsed = '0000000000000';
+    let notUsed = '0000000000000000';
     let decimal = parseInt((opcode + regA + regB + notUsed), 2);
     TEXT_INSTANCE.push(`${decimal}`);
 
