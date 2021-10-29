@@ -1,0 +1,21 @@
+        lw      0       1       multip
+        lw      0       2       multic
+        lw      0       6       round
+        lw      0       7       next
+        lw      0       3       check
+mul     nand    1       3       4
+        nand    4       4       4
+        beq     4       0       else
+        add     5       2       5
+else    add     2       2       2
+        add     3       3       3
+        add     6       7       6
+        beq     0       6       2
+        beq     0       0       mul
+        noop
+done    halt
+multip  .fill   32766
+multic  .fill   10383
+check   .fill   1
+round   .fill   15
+next    .fill   -1

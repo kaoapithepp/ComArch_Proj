@@ -13,5 +13,5 @@ loop2   beq     5    0    loop1
         beq     0    0    loop2
         noop
 end     halt
-input   .fill   4
+input   .fill   7
 neg1    .fill   -1

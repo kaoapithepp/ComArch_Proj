@@ -67,6 +67,34 @@ function checkTwoComplimentOffset(value) {
     }
 }
 
+// function convertExtend1Bit(value) {
+//     let binaryStr, bitCount = 16;
+    
+//     if (value >= 0) {
+//       let twosComp = value.toString(2);
+//       binaryStr = padAndChop(twosComp, '0', (bitCount || twosComp.length));
+//     } else {
+//         binaryStr = (Math.pow(2, bitCount) + value).toString(2);
+//         if (Number(binaryStr) < 0) {
+//             return undefined;
+//         }
+//     }
+    
+//     return `${binaryStr}`;
+// }
+
+function extend16Bit(value) {
+    let temp = value;
+    if(value.length < 13){
+        for(let i = 0; i < (13 - value.length) ; i++){
+            temp = '0' + temp;
+        }
+    }
+    //debugger
+    // console.log('this is extend16 : ' + temp);
+    return temp;
+}
+
 /* Identifying Instruction Type */
 function identifierBinary(cmd) {
     let converted = convertToBinary(Number(cmd));
@@ -131,20 +159,32 @@ function nandOps(line) {
     let regB = line.substr(6,3);
     let destReg = line.substr(22,3);
 
-    // console.log(`regA : ${regA}, regB : ${regB}`);
+    console.log(`regA : ${regA}, regB : ${regB}`);
+
+    let regAval = Number(REGISTER_SLOT[parseInt(regA, 2)]);
+    let regBval = Number(REGISTER_SLOT[parseInt(regB, 2)]);
+
+    console.log(`regAval : ${typeof regAval}, regBval : ${typeof regBval}`);
+
+
+    let regAext = extend16Bit(Number(regAval).toString(2));
+    let regBext = extend16Bit(Number(regBval).toString(2));
+    
+    console.log(`regAext : ${regAext}, regBext : ${regBext}`);
 
     let str='';
-    for(let i = 0; i < regA.length ; i++){
-        if(1 == regA.charAt(i) && 1 == regB.charAt(i)){
+
+    for(let i = 0; i < String(regAext).length ; i++){
+        if(String(regAext).charAt(i) == 1 && String(regBext).charAt(i) == 1){
             str += '0';
         } else {
             str += '1';
         }
     }
 
-    // console.log(str);
+    console.log('str : ' + str);
 
-    REGISTER_SLOT[parseInt(destReg, 2)] = Number(checkTwoComplimentOffset(str));
+    REGISTER_SLOT[parseInt(destReg, 2)] = checkTwoComplimentOffset(str);
     pc += 1;
 
     displayState();
