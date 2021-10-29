@@ -5,7 +5,7 @@ const export_file = require('fs');
 // Test Cases
 // const TEXT_PATH = '../code-assembly.txt';
 // const TEXT_PATH = '../assembly/combination.txt';
-const TEXT_PATH = '../assembly/combine.txt';
+const TEXT_PATH = 'C:/Users/Admin/Downloads/ComPro/ComArch_Proj/assembly/combine.txt';
 // const TEXT_PATH = '../assembly/factorial.txt';
 // const TEXT_PATH = '../assembly/multiplication.txt';
 // const TEXT_PATH = '../assembly/multiplication2.txt';
@@ -57,7 +57,46 @@ function preRead() {
 // function : recognize that line's label and value
 function recogLabel(value, line) {
     LABEL_REF[value] = line;
+    
 }
+//function : CheckError; Check Label is underfine,Check the same Label ,OffsetField
+function CheckError(offsetField) {
+        err = 1;
+        if(offsetField < -32767 || offsetField >= 32767 ){ //offsetField between -32768 to 32767
+            console.log("exit(" +  err  + ")");
+        }
+}
+
+//function : Check Opcode;Check Opcode that underfined and Check correct of Opcode 
+function CheckOpcode(opcode){
+    Checkopcode =0;
+    if( opcode  == '000'){
+        Checkopcode = 0;
+        //console.log("Opcode is add");
+    }else if(opcode == '001'){
+        Checkopcode = 0;
+        //console.log('Opcode is nand');
+    }else if(opcode == '010'){
+        Checkopcode = 0;
+        //console.log("Opcode is lw");
+    }else if(opcode == '011'){
+        Checkopcode = 0;
+        //console.log("Opcode is sw");
+    }else if(opcode == '101'){
+        Checkopcode = 0;
+        //console.log('Opcode is jalr');
+    }else if(opcode == '110'){
+        Checkopcode = 0;
+        //console.log('Opcode  is halt');
+    }else if(opcode == '111'){
+        Checkopcode = 0;
+        //console.log("Opcode is noop");
+    }else{
+        Checkopcode = 1;
+        console.log('exit(' + err + ")");
+    }
+}
+
 
 // function : check label; if it has label, goes trim off it
 function checkForTrim(input) {
@@ -86,26 +125,32 @@ function formatChecker(line) {
             case 'add':
                 // console.log('found add');
                 addBinary(ASSEMBLY_LINE[pc]);
+            
                 break;
             case 'nand':
                 // console.log('found nand');
                 nandBinary(ASSEMBLY_LINE[pc])
+            
                 break;
             case 'lw':
                 // console.log('found lw');
                 lwBinary(ASSEMBLY_LINE[pc]);
+                
                 break;
             case 'sw':
                 // console.log('found sw');
                 swBinary(ASSEMBLY_LINE[pc]);
+                
                 break;
             case 'beq':
                 // console.log('found beq');
                 beqBinary(ASSEMBLY_LINE[pc]);
+                
                 break;
             case 'jalr':
                 // console.log('found jalr');
                 jalrBinary(ASSEMBLY_LINE[pc]);
+            
                 break;
             case 'noop':
                 // console.log('found noop');
@@ -279,6 +324,8 @@ function addBinary(cmd) {
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '000';
+    CheckError();
+    CheckOpcode(opcode);
     let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
     let notUsed = '0000000000000';
@@ -300,6 +347,9 @@ function nandBinary(cmd) {
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '001';
+    CheckError();
+    CheckOpcode(opcode);
+
     let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
     let notUsed = '0000000000000';
@@ -321,10 +371,12 @@ function lwBinary(cmd) {
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '010';
+    CheckError();
+    CheckOpcode(opcode);
+
     let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
     let offset = trimmedCmd[trimmedCmd.length - 1];
-
     let offsetField = checkMatchedPropForLoad(offset);
 
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
@@ -343,12 +395,13 @@ function swBinary(cmd) {
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '011';
+    CheckError();
+    CheckOpcode(opcode);
+
     let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
     let offset = trimmedCmd[trimmedCmd.length - 1];
-
     let offsetField = checkMatchedProps(offset);
-
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
     TEXT_INSTANCE.push(`${decimal}`);
 
@@ -365,12 +418,15 @@ function beqBinary(cmd) {
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '100';
+    CheckError();
+    CheckOpcode(opcode);
+
     let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
     let offset = trimmedCmd[trimmedCmd.length - 1]; // no matter is number or label
-
-    let offsetField = getLineNumFromLabel(offset);
     
+    
+    let offsetField = getLineNumFromLabel(offset);
 
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
     TEXT_INSTANCE.push(`${decimal}`);
@@ -388,10 +444,12 @@ function jalrBinary(cmd) {
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '101';
+    CheckError();
+    CheckOpcode(opcode);
+
     let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
     let notUsed = '0000000000000';
-
     let decimal = parseInt((opcode + regA + regB + notUsed), 2);
     TEXT_INSTANCE.push(`${decimal}`);
 
@@ -406,6 +464,9 @@ function haltBinary(cmd) {
     console.log(cmd);
 
     let opcode = '110';
+    CheckError();
+    CheckOpcode(opcode);
+
     let notUsed = '0000000000000000000000';
 
     let decimal = parseInt((opcode + notUsed), 2);
@@ -422,6 +483,9 @@ function noopBinary(cmd) {
     console.log(cmd);
 
     let opcode = '111';
+    CheckError();
+    CheckOpcode(opcode);
+
     let notUsed = '0000000000000000000000';
 
     let decimal = parseInt((opcode + notUsed), 2);
