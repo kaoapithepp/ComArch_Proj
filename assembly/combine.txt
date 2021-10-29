@@ -1,5 +1,5 @@
         lw  0   6   combine2
-end     lw  0   1   n
+        lw  0   1   n
         lw  0   1   r
         lw  0   5   stack
         lw  0   7   wtf

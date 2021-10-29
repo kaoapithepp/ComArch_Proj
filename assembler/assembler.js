@@ -3,9 +3,9 @@ const file_import = require('fs');
 const export_file = require('fs');
 
 // Test Cases
-// const TEXT_PATH = '../code-assembly.txt';
+const TEXT_PATH = '../code-assembly.txt';
 // const TEXT_PATH = '../assembly/factorial.txt';
-const TEXT_PATH = '../assembly/combine.txt';
+// const TEXT_PATH = '../assembly/combine.txt';
 // const TEXT_PATH = '../assembly/multiplication.txt';
 // const TEXT_PATH = '../assembly/combination.txt';
 
@@ -64,19 +64,61 @@ function recogLabel(value, line) {
     LABEL_REF[value] = line;
 }
 
+// function : check using undefined label
+function checkUndefinedLabel(keyword) {
+    let exit = 0
+    if(keyword == Number(keyword)){
+        return keyword;
+    }
+    else {
+        let labels = Object.keys(LABEL_REF);
+        for(let i = 0; i < labels.length || exit != 1; i++){
+            if(keyword == labels[i]){
+                return keyword;
+            } else if (keyword != labels[i] && i == labels.length-1) {
+                exit = 1;
+                terminator = 1;
+                throw 'Error : Undefined label';
+            }
+        }
+    }
+}
+
 // function : check redundant label
 function checkRedundantLabel(keyword) {
     let exit = 0
-
     for(let i = 0; i < Object.keys(LABEL_REF).length && exit != 1; i++){
         if(Object.keys(LABEL_REF)[i] == keyword){
             exit = 1;
             terminator = 1;
-            throw 'error : redundant label';
+            throw 'Error : Redundant label';
         }
     }
-    
 }
+
+//function : CheckError; Check Label is underfine,Check the same Label ,OffsetField
+function CheckLeak16bitOffset(offset) {
+    if(offset < -65536 || offset > 65535){
+        terminator = 1;
+        throw 'Error : Exceed offset';
+    }
+}
+
+//function : Check Opcode;Check Opcode that underfined and Check correct of Opcode 
+function CheckOpcode(opcode){
+    if( opcode != '000' &&
+        opcode != '001' &&
+        opcode != '010' &&
+        opcode != '011' &&
+        opcode != '100' &&
+        opcode != '101' &&
+        opcode != '110' &&
+        opcode != '111'){
+            terminator = 1;
+            throw 'Error : Wrong opcode usage';
+        }
+}
+
 // function : check label; if it has label, goes trim off it
 function checkForTrim(input) {
     if( input[0] != 'add' &&
@@ -104,26 +146,32 @@ function formatChecker(line) {
             case 'add':
                 // console.log('found add');
                 addBinary(ASSEMBLY_LINE[pc]);
+            
                 break;
             case 'nand':
                 // console.log('found nand');
                 nandBinary(ASSEMBLY_LINE[pc])
+            
                 break;
             case 'lw':
                 // console.log('found lw');
                 lwBinary(ASSEMBLY_LINE[pc]);
+                
                 break;
             case 'sw':
                 // console.log('found sw');
                 swBinary(ASSEMBLY_LINE[pc]);
+                
                 break;
             case 'beq':
                 // console.log('found beq');
                 beqBinary(ASSEMBLY_LINE[pc]);
+                
                 break;
             case 'jalr':
                 // console.log('found jalr');
                 jalrBinary(ASSEMBLY_LINE[pc]);
+            
                 break;
             case 'noop':
                 // console.log('found noop');
@@ -187,35 +235,6 @@ function extend16Bit(value) {
     //debugger
     // console.log('this is extend16 : ' + temp);
     return temp;
-}
-
-// function : check if offsetField matched with label names and get AMOUNT of line that we have to jump to.
-function checkMatchedProps(elem){
-    const validator = Object.getOwnPropertyNames(LABEL_REF);
-    for(let i = 0; i < validator.length ; i++){
-        if(elem == validator[i]){
-            // const val = ASSEMBLY_LINE[LABEL_REF[validator[i]]][2];
-            const val = LABEL_REF[validator[i]];
-            if(val > pc) {
-                let diff = val - pc; // diff returns amount of line that it must go
-
-                // debugger
-                // console.log(diff);
-                return extend16Bit(String(Number(diff).toString(2))); // return as extended binary
-            } else if (val < pc) {
-                let diff = pc - val; // diff returns amount of line that it must go
-
-                // debugger
-                // console.log(diff);
-                return convertExtend1Bit(diff); // return as converted extended binary
-            } else {
-                return error;
-            }
-        } else {
-            continue;
-        }
-    } 
-    return extend16Bit(Number(elem).toString(2));
 }
 
 // get line's NUMBER which has the matched command
@@ -297,6 +316,9 @@ function addBinary(cmd) {
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '000';
+
+    CheckOpcode(opcode);
+
     let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
     let notUsed = '0000000000000';
@@ -318,6 +340,9 @@ function nandBinary(cmd) {
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '001';
+
+    CheckOpcode(opcode);
+
     let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
     let notUsed = '0000000000000';
@@ -339,11 +364,18 @@ function lwBinary(cmd) {
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '010';
+
+    CheckOpcode(opcode);
+
     let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
     let offset = trimmedCmd[trimmedCmd.length - 1];
 
+    checkUndefinedLabel(offset);
+
     let offsetField = checkMatchedPropForLoad(offset);
+
+    CheckLeak16bitOffset(parseInt(offsetField, 2));
 
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
     TEXT_INSTANCE.push(`${decimal}`);
@@ -361,13 +393,18 @@ function swBinary(cmd) {
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '011';
+
+    CheckOpcode(opcode);
+
     let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
     let offset = trimmedCmd[trimmedCmd.length - 1];
 
-    console.log(offset);
+    checkUndefinedLabel(offset);
 
     let offsetField = checkMatchedPropForLoad(offset);
+
+    CheckLeak16bitOffset(parseInt(offsetField, 2));
 
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
     TEXT_INSTANCE.push(`${decimal}`);
@@ -385,12 +422,18 @@ function beqBinary(cmd) {
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '100';
+
+    CheckOpcode(opcode);
+
     let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
     let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
     let offset = trimmedCmd[trimmedCmd.length - 1]; // no matter is number or label
-
-    let offsetField = getLineNumFromLabel(offset);
     
+    checkUndefinedLabel(offset);
+    
+    let offsetField = getLineNumFromLabel(offset);
+
+    CheckLeak16bitOffset(parseInt(offsetField, 2));
 
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
     TEXT_INSTANCE.push(`${decimal}`);
@@ -408,10 +451,12 @@ function jalrBinary(cmd) {
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '101';
-    let regA = extend3Bit(Number(trimmedCmd[trimmedCmd.length-2]).toString(2));
-    let regB = extend3Bit(Number(trimmedCmd[trimmedCmd.length-1]).toString(2));
-    let notUsed = '0000000000000000';
 
+    CheckOpcode(opcode);
+
+    let regA = extend3Bit(Number(trimmedCmd[1]).toString(2));
+    let regB = extend3Bit(Number(trimmedCmd[2]).toString(2));
+    let notUsed = '0000000000000';
     let decimal = parseInt((opcode + regA + regB + notUsed), 2);
     TEXT_INSTANCE.push(`${decimal}`);
 
@@ -426,6 +471,9 @@ function haltBinary(cmd) {
     console.log(cmd);
 
     let opcode = '110';
+
+    CheckOpcode(opcode);
+
     let notUsed = '0000000000000000000000';
 
     let decimal = parseInt((opcode + notUsed), 2);
@@ -442,6 +490,9 @@ function noopBinary(cmd) {
     console.log(cmd);
 
     let opcode = '111';
+
+    CheckOpcode(opcode);
+
     let notUsed = '0000000000000000000000';
 
     let decimal = parseInt((opcode + notUsed), 2);
