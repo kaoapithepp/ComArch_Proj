@@ -35,10 +35,9 @@ function readTextFile(path) {
     }
 }  
 
-// function : 2's complement -> Credit : Brandon Sarà 
+// function : 2's complement and extend to signed binary -> Credit : Brandon Sarà 
 function convertToBinary(value) {
     let binaryStr, bitCount = BITCOUNT;
-    
     if (value >= 0) {
       let twosComp = value.toString(2);
       binaryStr = padAndChop(twosComp, '0', (bitCount || twosComp.length));
@@ -56,6 +55,7 @@ function padAndChop(str, padChar, length) {
     return (Array(length).fill(padChar).join('') + str).slice(length * -1);
 }
 
+// check 2's compliment binary then convert to decimal
 function checkTwoComplimentOffset(value) {
     let sqrtNum = Math.pow(2, value.length) - 1;
     if(value.substr(0,1) ==  1){
@@ -67,26 +67,11 @@ function checkTwoComplimentOffset(value) {
     }
 }
 
-// function convertExtend1Bit(value) {
-//     let binaryStr, bitCount = 16;
-    
-//     if (value >= 0) {
-//       let twosComp = value.toString(2);
-//       binaryStr = padAndChop(twosComp, '0', (bitCount || twosComp.length));
-//     } else {
-//         binaryStr = (Math.pow(2, bitCount) + value).toString(2);
-//         if (Number(binaryStr) < 0) {
-//             return undefined;
-//         }
-//     }
-    
-//     return `${binaryStr}`;
-// }
-
+// extend bit with unsigned
 function extend16Bit(value) {
     let temp = value;
-    if(value.length < 13){
-        for(let i = 0; i < (13 - value.length) ; i++){
+    if(value.length < 16){
+        for(let i = 0; i < (16 - value.length) ; i++){
             temp = '0' + temp;
         }
     }
@@ -100,7 +85,6 @@ function identifierBinary(cmd) {
     let converted = convertToBinary(Number(cmd));
     // debugger
     // console.log(converted);
-
     switch(converted.substr(0,3)){
         case '000' : // add    -> R-Type format
             addOps(converted);
@@ -135,12 +119,7 @@ function addOps(line) {
     let regA = line.substr(3,3);
     let regB = line.substr(6,3);
     let destReg = line.substr(22,3);
-    
-    // debugger
-    // console.log('opcode : ' + opcode)
-    // console.log('regA : ' + regA)
-    // console.log('regB : ' + regB)
-    // console.log('destReg : ' + destReg)
+    let notUsed = '0000000000000';
 
     REGISTER_SLOT[Number(parseInt(destReg, 2))] = Number(REGISTER_SLOT[parseInt(regA, 2)])  + Number(REGISTER_SLOT[parseInt(regB, 2)]);
     pc += 1;
@@ -149,8 +128,7 @@ function addOps(line) {
     displayState();
 
     // debugger
-    console.log('add : ' + opcode + regA + regB + destReg);
-    // console.log('add \n');
+    // console.log('add : ' + opcode + regA + regB + notUsed + destReg);
 }
 
 function nandOps(line) {
@@ -158,41 +136,39 @@ function nandOps(line) {
     let regA = line.substr(3,3);
     let regB = line.substr(6,3);
     let destReg = line.substr(22,3);
+    let notUsed = '0000000000000';
 
     console.log(`regA : ${regA}, regB : ${regB}`);
 
     let regAval = Number(REGISTER_SLOT[parseInt(regA, 2)]);
     let regBval = Number(REGISTER_SLOT[parseInt(regB, 2)]);
 
-    console.log(`regAval : ${typeof regAval}, regBval : ${typeof regBval}`);
+    // debugger
+    // console.log(`regAval : ${regAval}, regBval : ${regBval}`);
 
+    let regAext = extend16Bit(regAval.toString(2));
+    let regBext = extend16Bit(regBval.toString(2));
 
-    let regAext = extend16Bit(Number(regAval).toString(2));
-    let regBext = extend16Bit(Number(regBval).toString(2));
-    
-    console.log(`regAext : ${regAext}, regBext : ${regBext}`);
+    // debugger
+    // console.log(`regAext : ${regAext}, regBext : ${regBext}`);
 
-    let str='';
+    let str = '';
 
     for(let i = 0; i < String(regAext).length ; i++){
-        if(String(regAext).charAt(i) == 1 && String(regBext).charAt(i) == 1){
-            str += '0';
-        } else {
-            str += '1';
-        }
+        str += `${1-(Number(String(regAext).charAt(i))*Number(String(regBext).charAt(i)))}`;
     }
 
     console.log('str : ' + str);
 
-    REGISTER_SLOT[parseInt(destReg, 2)] = checkTwoComplimentOffset(str);
+    REGISTER_SLOT[parseInt(destReg, 2)] = parseInt(str, 2);
     pc += 1;
+    inst_count += 1;
 
     displayState();
 
     // debugger
-    console.log('nand : ' + opcode + regA + regB + destReg);
+    // console.log('nand : ' + opcode + regA + regB + notUsed + destReg);
 
-    inst_count += 1;
 }
 
 function lwOps(line) {
@@ -210,8 +186,7 @@ function lwOps(line) {
     displayState();
     
     // debugger
-    console.log('lw : ' + opcode + regA + regB + offsetField);
-    // console.log('lw \n');
+    // console.log('lw : ' + opcode + regA + regB + offsetField);
 }
 
 function swOps(line) {
@@ -219,8 +194,6 @@ function swOps(line) {
     let regA = line.substr(3,3);
     let regB = line.substr(6,3);
     let offsetField = line.substr(9,16);
-
-    // MEM_DECIMAL_ARRAY[Number(REGISTER_SLOT[parseInt(regA, 2)]) + parseInt(offsetField, 2)] = REGISTER_SLOT[parseInt(regB, 2)];
 
     MEM_DECIMAL_ARRAY[Number(parseInt(offsetField, 2)) + Number(REGISTER_SLOT[parseInt(regA, 2)])] = Number(REGISTER_SLOT[parseInt(regB, 2)])
 
@@ -230,8 +203,7 @@ function swOps(line) {
     displayState();
 
     // debugger
-    console.log('sw : ' + opcode + regA + regB + offsetField);
-    // console.log('sw \n');
+    // console.log('sw : ' + opcode + regA + regB + offsetField);
 }
 
 function beqOps(line) {
@@ -242,10 +214,6 @@ function beqOps(line) {
         let offsetField = line.substr(9,16);
         
         let res = checkTwoComplimentOffset(offsetField);
-
-        // debugger
-        // console.log('res : ' + res);
-        // console.log('pc : ' + pc);
 
         if(REGISTER_SLOT[parseInt(regA, 2)] == REGISTER_SLOT[parseInt(regB, 2)]){
             pc = pc + Number(res) + 1;
@@ -258,8 +226,7 @@ function beqOps(line) {
         displayState();
         
         // debugger
-        console.log('beq : ' + opcode + regA + regB + offsetField);
-        // console.log('beq \n');
+        // console.log('beq : ' + opcode + regA + regB + offsetField);
 
     } catch(err) {
         throw err.message;
@@ -272,16 +239,6 @@ function jalrOps(line) {
     let regA = line.substr(3,3);
     let regB = line.substr(6,3);
 
-    // pc += 1;
-
-    // if(REGISTER_SLOT[parseInt(regA, 2)] == REGISTER_SLOT[parseInt(regB, 2)]) {
-    //     REGISTER_SLOT[parseInt(regB, 2)] = pc;
-    //     pc = MEM_DECIMAL_ARRAY[parseInt(regB, 2)];
-    // } else {
-    //     REGISTER_SLOT[parseInt(regB, 2)] = pc;
-    //     pc = MEM_DECIMAL_ARRAY[parseInt(regA, 2)];
-    // }
-
     pc += 1;
     REGISTER_SLOT[parseInt(regB, 2)] = pc;
 
@@ -292,7 +249,7 @@ function jalrOps(line) {
     }
 
     // debugger
-        console.log('jalr : ' + opcode + regA + regB);
+    // console.log('jalr : ' + opcode + regA + regB);
 
     inst_count += 1;
 }
@@ -304,12 +261,10 @@ function haltOps(line) {
     noHalted = 0;
     inst_count += 1;
     
-
     displayState();
 
     // debugger
     // console.log('halt : ' + opcode);
-    // console.log('halt \n');
 }
 
 function noopOps(line) {
@@ -322,7 +277,6 @@ function noopOps(line) {
     
     // debugger
     // console.log('noop : ' + opcode);
-    // console.log('noop \n');
 }
 
 /* Display state */
@@ -351,14 +305,8 @@ try {
         identifierBinary(MEM_DECIMAL_ARRAY[pc]);
     }
 
-    // debugger
-    // while(pc < 10){
-    //     identifierBinary(MEM_DECIMAL_ARRAY[pc]);
-    // }
-
     console.log('# of instructions: ' + inst_count);
     
-}
-catch(err) {
+} catch(err) {
     console.log(err);
 }

@@ -5,12 +5,12 @@ const export_file = require('fs');
 // Test Cases
 // const TEXT_PATH = '../code-assembly.txt';
 // const TEXT_PATH = '../assembly/factorial.txt';
-const TEXT_PATH = '../assembly/multiplication.txt';
-// const TEXT_PATH = '../assembly/combine.txt';
+// const TEXT_PATH = '../assembly/multiplication.txt';
+const TEXT_PATH = '../assembly/combine.txt';
 
-// const TEXT_PATH = '../assembly/multiplication-up.txt';
-// const TEXT_PATH = '../assembly/multiplication-tonnam.txt';
-// const TEXT_PATH = '../assembly/combination-up.txt';
+// const TEXT_PATH = '../assembly/up-multiplication.txt';
+// const TEXT_PATH = '../assembly/tonnam-multiplication.txt';
+// const TEXT_PATH = '../assembly/up-combination.txt';
 
 // Array preservation
 const ASSEMBLY_LINE = []; // for storing assembly command
@@ -57,7 +57,7 @@ function preRead() {
             }
         }
     // debugger
-    // console.log(LABEL_REF); // print label name with line number
+    // console.log(LABEL_REF); // debugger label name with line number
 }
 
 
@@ -67,7 +67,7 @@ function recogLabel(value, line) {
     LABEL_REF[value] = line;
 }
 
-// function : check using undefined label
+// function : check if using undefined label
 function checkUndefinedLabel(keyword) {
     let exit = 0
     if(keyword == Number(keyword)){
@@ -100,7 +100,7 @@ function checkRedundantLabel(keyword) {
     }
 }
 
-//function : CheckError; Check Label is underfine,Check the same Label ,OffsetField
+//function : check if offset is over than 16 bit
 function checkLeak16bitOffset(offset) {
     if(offset < -65536 || offset > 65535){
         terminator = 1;
@@ -108,7 +108,7 @@ function checkLeak16bitOffset(offset) {
     }
 }
 
-//function : Check Opcode;Check Opcode that underfined and Check correct of Opcode 
+//function : check if label that used is not valid 
 function checkNotValidCmd(opcode){
     let trimmed = checkForTrim(opcode);
     // console.log(trimmed);
@@ -126,7 +126,7 @@ function checkNotValidCmd(opcode){
     }
 }
 
-// function : check label; if it has label, goes trim off it
+// function : check first string of cmd; if it's a label, trim off it
 function checkForTrim(input) {
     if( input[0] != 'add' &&
         input[0] != 'nand' &&
@@ -153,32 +153,26 @@ function formatChecker(line) {
             case 'add':
                 // console.log('found add');
                 addBinary(ASSEMBLY_LINE[pc]);
-            
                 break;
             case 'nand':
                 // console.log('found nand');
                 nandBinary(ASSEMBLY_LINE[pc])
-            
                 break;
             case 'lw':
                 // console.log('found lw');
                 lwBinary(ASSEMBLY_LINE[pc]);
-                
                 break;
             case 'sw':
                 // console.log('found sw');
                 swBinary(ASSEMBLY_LINE[pc]);
-                
                 break;
             case 'beq':
                 // console.log('found beq');
                 beqBinary(ASSEMBLY_LINE[pc]);
-                
                 break;
             case 'jalr':
                 // console.log('found jalr');
                 jalrBinary(ASSEMBLY_LINE[pc]);
-            
                 break;
             case 'noop':
                 // console.log('found noop');
@@ -200,7 +194,6 @@ function formatChecker(line) {
 // function : 2's complement -> Credit : Brandon Sarà 
 function convertExtend1Bit(value) {
     let binaryStr, bitCount = 16;
-    
     if (value >= 0) {
       let twosComp = value.toString(2);
       binaryStr = padAndChop(twosComp, '0', (bitCount || twosComp.length));
@@ -210,7 +203,6 @@ function convertExtend1Bit(value) {
             return undefined;
         }
     }
-    
     return `${binaryStr}`;
 }
 
@@ -279,7 +271,6 @@ function checkMatchedPropForFill(elem){
 
 // get line's number from the matched label, check with pc by conditions and return extended binary
 function getLineNumFromLabel(elem){
-
     if(elem == Number(elem)){
         return extend16Bit(Number(elem).toString(2));
     } else if (String(elem) == 'halt'){
@@ -289,22 +280,15 @@ function getLineNumFromLabel(elem){
         for(let i = 0; i < validator.length ; i++){
             if(elem == validator[i]){
                 const lineNum =  checkMatchedPropForFill(validator[i]); // get THE VALUE within that label (line number)
-
-                // debugger
-                // console.log('lineNum : ' + lineNum);
-                // console.log('pc : ' + pc);
                 if(lineNum > pc) {
                     let diff = (Number(lineNum) - 1) - pc;
                     // debugger
                     // console.log('diff : ' + diff);
-                    // console.log('pc after diff : ' + pc);
                     return extend16Bit(Number(diff).toString(2));
                 } else if (lineNum < pc){
                     let diff = pc - Number(lineNum);
                     // debugger
                     // console.log('diff : ' + diff);
-                    // console.log('pc after diff : ' + pc);
-                    // console.log(Number(~diff));
                     return convertExtend1Bit(Number(~diff));
                 } else {
                     return error;
@@ -318,8 +302,6 @@ function getLineNumFromLabel(elem){
 
 /* functions : translate add command to bin */
 function addBinary(cmd) {
-    // console.log(cmd);
-
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '000';
@@ -332,7 +314,7 @@ function addBinary(cmd) {
     let decimal = parseInt((opcode + regA + regB + notUsed + destReg), 2);
     TEXT_INSTANCE.push(`${decimal}`);
 
-    // print
+    // debugger
     // console.log(opcode + regA + regB + notUsed + destReg);
     // console.log('add as decimal : ' + decimal);
 
@@ -340,8 +322,6 @@ function addBinary(cmd) {
 }
 
 function nandBinary(cmd) {
-    // console.log(cmd);
-
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '001';
@@ -354,7 +334,7 @@ function nandBinary(cmd) {
     let decimal = parseInt((opcode + regA + regB + notUsed + destReg), 2);
     TEXT_INSTANCE.push(`${decimal}`);
 
-    // print
+    // debugger
     // console.log(opcode + regA + regB + notUsed + destReg);
     // console.log('nand as decimal : ' + decimal);
 
@@ -362,8 +342,6 @@ function nandBinary(cmd) {
 }
 
 function lwBinary(cmd) {
-    // console.log(cmd);
-
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '010';
@@ -381,7 +359,7 @@ function lwBinary(cmd) {
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
     TEXT_INSTANCE.push(`${decimal}`);
 
-    // print
+    // debugger
     // console.log(opcode + regA + regB + offsetField);
     // console.log('lw as decimal : '+ decimal);
 
@@ -389,8 +367,6 @@ function lwBinary(cmd) {
 }
 
 function swBinary(cmd) {
-    // console.log(cmd);
-
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '011';
@@ -408,7 +384,7 @@ function swBinary(cmd) {
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
     TEXT_INSTANCE.push(`${decimal}`);
 
-    // print
+    // debugger
     // console.log(opcode + regA + regB + offsetField);
     // console.log('sw as decimal : '+ decimal);
 
@@ -416,8 +392,6 @@ function swBinary(cmd) {
 }
 
 function beqBinary(cmd) {
-    // console.log(cmd);
-
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '100';
@@ -435,7 +409,7 @@ function beqBinary(cmd) {
     let decimal = parseInt((opcode + regA + regB + offsetField), 2);
     TEXT_INSTANCE.push(`${decimal}`);
 
-    // print
+    // debugger
     // console.log(opcode + regA + regB + offsetField);
     // console.log('beq as decimal : '+ decimal);
 
@@ -443,8 +417,6 @@ function beqBinary(cmd) {
 }
 
 function jalrBinary(cmd) {
-    // console.log(cmd);
-
     let trimmedCmd = checkForTrim(cmd);
 
     let opcode = '101';
@@ -455,7 +427,7 @@ function jalrBinary(cmd) {
     let decimal = parseInt((opcode + regA + regB + notUsed), 2);
     TEXT_INSTANCE.push(`${decimal}`);
 
-    // print
+    // debugger
     // console.log(opcode + regA + regB + notUsed);
     // console.log('jalr as decimal : ' + decimal);
 
@@ -463,8 +435,6 @@ function jalrBinary(cmd) {
 }
 
 function haltBinary(cmd) {
-    // console.log(cmd);
-
     let opcode = '110';
 
     let notUsed = '0000000000000000000000';
@@ -472,7 +442,7 @@ function haltBinary(cmd) {
     let decimal = parseInt((opcode + notUsed), 2);
     TEXT_INSTANCE.push(`${decimal}`);
 
-    // print
+    // debugger
     // console.log(opcode + notUsed);
     // console.log('halt as decimal : ' + decimal);
 
@@ -480,8 +450,6 @@ function haltBinary(cmd) {
 }
 
 function noopBinary(cmd) {
-    // console.log(cmd);
-
     let opcode = '111';
 
     let notUsed = '0000000000000000000000';
@@ -489,7 +457,7 @@ function noopBinary(cmd) {
     let decimal = parseInt((opcode + notUsed), 2);
     TEXT_INSTANCE.push(`${decimal}`);
 
-    // print
+    // debugger
     // console.log(opcode + notUsed);
     // console.log('noop as decimal : ' + decimal);
 
@@ -497,8 +465,6 @@ function noopBinary(cmd) {
 }
 
 function fillBinary(cmd) {
-    // console.log(cmd);
-
     let trimmedCmd = checkForTrim(cmd);
     let elem = trimmedCmd[trimmedCmd.length - 1];
 
@@ -507,12 +473,7 @@ function fillBinary(cmd) {
     let immidiate = checkMatchedPropForFill(elem);
     TEXT_INSTANCE.push(`${immidiate}`);
 
-    // print
-    // console.log(immidiate);
-    // console.log('fill as decimal : ' + immidiate);
-
-    // let immidiate = checkMatchedPropForFill(cmd);
-    // TEXT_INSTANCE.push(`${immidiate}`);
+    // debugger
     // console.log('fill as decimal : ' + immidiate);
 
     pc += 1;
@@ -543,7 +504,6 @@ try {
     }
     console.log(TEXT_INSTANCE);
     createFileTxt(TEXT_INSTANCE);
-}
-catch(err) {
+} catch(err) {
     console.log(err);
 }
