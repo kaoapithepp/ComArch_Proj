@@ -207,31 +207,25 @@ function swOps(line) {
 }
 
 function beqOps(line) {
-    try {
-        let opcode = line.substr(0,3);
-        let regA = line.substr(3,3);
-        let regB = line.substr(6,3);
-        let offsetField = line.substr(9,16);
-        
-        let res = checkTwoComplimentOffset(offsetField);
+    let opcode = line.substr(0,3);
+    let regA = line.substr(3,3);
+    let regB = line.substr(6,3);
+    let offsetField = line.substr(9,16);
+    
+    let res = checkTwoComplimentOffset(offsetField);
 
-        if(REGISTER_SLOT[parseInt(regA, 2)] == REGISTER_SLOT[parseInt(regB, 2)]){
-            pc = pc + Number(res) + 1;
-        } else {
-            pc += 1;
-        }
-        
-        inst_count += 1;
-
-        displayState();
-        
-        // debugger
-        // console.log('beq : ' + opcode + regA + regB + offsetField);
-
-    } catch(err) {
-        throw err.message;
+    if(REGISTER_SLOT[parseInt(regA, 2)] == REGISTER_SLOT[parseInt(regB, 2)]){
+        pc = pc + Number(res) + 1;
+    } else {
+        pc += 1;
     }
     
+    inst_count += 1;
+
+    displayState();
+    
+    // debugger
+    // console.log('beq : ' + opcode + regA + regB + offsetField);
 }
 
 function jalrOps(line) {
@@ -298,6 +292,8 @@ function displayState() {
 
 /* Main Procedure */
 try {
+    const start = Date.now();
+
     readTextFile(TEXT_PATH);
     displayState();
 
@@ -306,7 +302,13 @@ try {
     }
 
     console.log('# of instructions: ' + inst_count);
-    
+    // Memory usage
+    const used = process.memoryUsage().heapUsed / 1024 / 1024;
+    console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
+
+    // Execution time
+    const stop = Date.now();
+    console.log(`Time Taken to execute = ${(stop - start)/1000} seconds`);
 } catch(err) {
     console.log(err);
 }
