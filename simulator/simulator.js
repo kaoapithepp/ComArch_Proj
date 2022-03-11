@@ -3,6 +3,7 @@ const file_import = require('fs');
 
 // Test Cases
 const TEXT_PATH = '../assembler/export-maccode.txt';
+// const TEXT_PATH = '../code-simulation.txt';
 
 // Constant Varible
 const BITCOUNT = 25;
@@ -23,9 +24,9 @@ function readTextFile(path) {
 
         const readLines = textFile.split(/\r?\n/);
 
-        readLines.forEach((line) => {
-            MEM_DECIMAL_ARRAY.push(line);
-        });
+        for(let i = 0; i < readLines.length ; i++){
+            MEM_DECIMAL_ARRAY.push(readLines[i]);
+        }
 
         // debugger
         // console.log(MEM_DECIMAL_ARRAY);
@@ -295,19 +296,19 @@ try {
     const start = Date.now();
 
     readTextFile(TEXT_PATH);
-    displayState();
+    displayState(); // display the first state after initiated
 
     while(noHalted){
         identifierBinary(MEM_DECIMAL_ARRAY[pc]);
     }
 
     console.log('# of instructions: ' + inst_count);
+    const stop = Date.now();
     // Memory usage
     const used = process.memoryUsage().heapUsed / 1024 / 1024;
     console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
 
     // Execution time
-    const stop = Date.now();
     console.log(`Time Taken to execute = ${(stop - start)/1000} seconds`);
 } catch(err) {
     console.log(err);
